@@ -17,4 +17,4 @@ run:
   - |
     export CI_BASE=`pwd`
     cd $CI_BASE/app
-    echo ".git/ref"
+    cat "$CI_BASE/app/.git/ref"
