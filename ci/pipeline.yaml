@@ -18,42 +18,91 @@ jobs:
     params:
       # this is NOT regexp bu bashism wildcard!!
       file: code-artifact/myapp-*.tgz
-  - put: app-staging-version
+
+- name: build-app-code-image
+  plan:
+  - get: staging-artifact-storage
+    passed: [build-app]
+  - get: ci-repo
+  - get: app-code-image-src
+  - task: build-app-code-image
+    file: ci-repo/tasks/docker_build_context_image.yml # TODO Add this file
+    image: make-image # TODO: Make image to run the build? Specify some public container with linux capabilisties
+    input_mapping:
+      repo: app-code-image-src
     params:
-      file: app-staging-version/version
+      DOCKER_PATH: ""
+    output_mapping:
+      docker-build-context: build-context
+  - put: app-code-image
+    get_params: { skip_download : true }
+    params:
+      build: build-context
+      tag_as_latest: true
 
 resources:
-- name: ci-repo
-  type: git
-  source:
-    uri: git@github.com:kw-concourse-example/concourse-app-release-lifecycle-example
-    private_key: ((github-private-key))
-    branch: master
+  - name: app-repo
+    type: git
+    source:
+      uri: git@github.com:kw-concourse-example/concourse-example-app
+      private_key: ((github-private-key))
+      branch: master
 
-- name: app-repo
-  type: git
-  source:
-    uri: git@github.com:kw-concourse-example/concourse-example-app
-    private_key: ((github-private-key))
-    branch: master
+  - name: app-staging-version
+    type: semver
+    source:
+      driver: git
+      uri: git@github.com:kw-concourse-example/concourse-example-app
+      branch: version
+      file: staging-version
+      private_key: ((github-private-key))
 
-- name: app-staging-version
-  type: semver
-  source:
-    driver: git
-    uri: git@github.com:kw-concourse-example/concourse-example-app
-    branch: version
-    file: staging-version
-    private_key: ((github-private-key))
+  - name: app-code-image-src
+    type: git
+    source:
+      uri: git@github.com:kw-concourse-example/concourse-example-app
+      private_key: ((github-private-key))
+      branch: master
 
-- name: staging-artifact-storage
-  type: s3
-  source:
-    bucket: myapp
-    disable_ssl: true
-    # our internal minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
-    endpoint: http://minio:9000
-    # this needs to be actual regexp
-    regexp: myapp-(.*).tgz
-    access_key_id: minio
-    secret_access_key: changeme
+  - name: app-code-docker-image
+    type: docker-image-resource-ng
+    check_every: 5m
+    source:
+      email: ((docker.user))@nonsense.local
+      username: ((docker.user))
+      password: ((docker.password))
+      # TODO: ADD a registry endpoint we can use.
+      repository: todo.add.an.example.registry.com/example_image
+      login:
+        - username:           ((docker.user))
+          password:           ((docker.password))
+          registry:           todo.add.an.example.registry.com
+      tag:                    latest
+
+  - name: staging-artifact-storage
+    type: s3
+    source:
+      bucket: myapp
+      disable_ssl: true
+      # our internal minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
+      endpoint: http://minio:9000
+      # this needs to be actual regexp
+      regexp: myapp-(.*).tgz
+      access_key_id: minio
+      secret_access_key: changeme
+
+  - name: ci-repo
+    type: git
+    source:
+      uri: git@github.com:kw-concourse-example/concourse-app-release-lifecycle-example
+      private_key: ((github-private-key))
+      branch: master
+
+resource_types:
+  - name: docker-image-resource-ng
+    type: docker-image
+    privileged: true
+    source:
+      repository: eugenmayer/concourse-docker-image-resource
+      tag: latest
+
