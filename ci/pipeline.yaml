@@ -1,0 +1,18 @@
+
+resources:
+- name: app-repo
+  type: git
+  source:
+    uri: git@github.com:kw-concourse-example/concourse-example-app
+    private_key: ((github-private-key))
+    branch: master
+
+jobs:
+- name: build-app
+  plan:
+  - get: app-repo
+    trigger: trye
+  - task: build-artificat
+    file: repo/ci/tasks/build-artifact.yaml
+    input_mapping:
+      app: app-repo

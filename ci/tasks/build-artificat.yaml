@@ -1,0 +1,21 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+    tag: "3.6"
+
+inputs:
+- name: app
+
+run:
+  path: sh
+  dir: auto-gate
+  args:
+  - -ec
+  - |
+    export CI_BASE=`pwd`
+    cd $CI_BASE/app
+    echo ".git/ref"
