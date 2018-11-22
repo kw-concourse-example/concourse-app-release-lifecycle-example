@@ -27,7 +27,7 @@ run:
     cd $CI_BASE/app
 
     # debug info
-    print "git sha sum is:"
+    printf "git sha sum is:"
     cat "$CI_BASE/app/.git/ref"
     echo
     echo "version is: $VERSION"
