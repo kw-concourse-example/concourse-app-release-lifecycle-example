@@ -12,7 +12,6 @@ inputs:
 
 run:
   path: sh
-  dir: auto-gate
   args:
   - -ec
   - |
