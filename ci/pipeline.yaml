@@ -14,11 +14,13 @@ resources:
     branch: master
 
 - name: app-staging-version
-  type: git
+  type: semver
   source:
-    uri: git@github.com:kw-concourse-example/concourse-example-app
-    private_key: ((github-private-key))
+    driver: git
+    uri: git@github.com:concourse/concourse.git
     branch: version
+    file: staging-version
+    private_key: ((github-private-key))
 
 - name: staging-artifact-storage
   type: s3
@@ -36,6 +38,9 @@ jobs:
 - name: build-app
   plan:
   - get: ci-repo
+  - get: app-staging-version
+    params:
+      pre: alpha
   - get: app-repo
     trigger: true
   - get: app-staging-version
@@ -43,7 +48,7 @@ jobs:
     file: ci-repo/ci/tasks/build-artifact.yaml
     input_mapping:
       app: app-repo
-      version: version
+      version: app-staging-version
     output_mapping:
       artifact: code-artifact
   - put: staging-artifact-storage

@@ -9,6 +9,7 @@ image_resource:
 
 inputs:
 - name: app
+- name: version
 
 outputs:
 - name: artifact
@@ -21,7 +22,7 @@ run:
   - |
     export CI_BASE=`pwd`
     export OUTPUT_FOLDER="$CI_BASE/artifact"
-
+    export VERSION=`cat $CI_BASE/version/version`
     # make us relative to the app
     cd $CI_BASE/app
 
@@ -34,4 +35,4 @@ run:
     cp $CI_BASE/app/.git/ref ./target/version
 
     # package our code and put it into our putput folder
-    tar czf $OUTPUT_FOLDER/myapp.tgz target
+    tar czf $OUTPUT_FOLDER/myapp-$VERSION.tgz target
