@@ -20,7 +20,7 @@ run:
   - -ec
   - |
     export CI_BASE=`pwd`
-    export OUTPUT_FOLDER="$CI_BASE/artificat"
+    export OUTPUT_FOLDER="$CI_BASE/artifact"
 
     # make us relative to the app
     cd $CI_BASE/app
@@ -30,7 +30,7 @@ run:
     cat "$CI_BASE/app/.git/ref"
 
     # create / simulate something "we compile" so that is our compile step and our compiled source lands in ./target
-    mkdir ./target
+    mkdir -p ./target
     cp $CI_BASE/app/.git/ref ./target/version
 
     # package our code and put it into our putput folder
