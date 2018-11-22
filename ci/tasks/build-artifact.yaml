@@ -10,8 +10,9 @@ image_resource:
 inputs:
 - name: app
 
-output:
+outputs:
 - name: artifact
+
 
 run:
   path: sh
