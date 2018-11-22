@@ -1,5 +1,14 @@
+groups:
+- name: staging
+  jobs:
+  - staging-build-app-artifiact
+  - staging-staging-build-app-code-image
+
 jobs:
-- name: build-app-artifiact
+#######################################################################
+###################### app-code: artifact #############################
+#######################################################################
+- name: staging-build-app-artifiact
   plan:
   - get: ci-repo
   - get: app-staging-version
@@ -14,20 +23,28 @@ jobs:
       version: app-staging-version
     output_mapping:
       artifact: code-artifact
+  # deploy / publish our artifact to our artifact storage
   - put: staging-app-artifact
     params:
       # this is NOT regexp bu bashism wildcard!!
       file: code-artifact/myapp-*.tgz
+  # be sure we save our bumped version
+  - put: app-staging-version
+    params:
+      file: app-staging-version/version
 
-- name: build-app-code-image
+#######################################################################
+###################### app-code: Docker image #########################
+#######################################################################
+- name: staging-staging-build-app-code-image
   plan:
   - get: staging-app-artifact
-    passed: [build-app-artifiact]
+    passed: [staging-build-app-artifiact]
   - get: app-staging-version
-    passed: [build-app-artifiact]
+    passed: [staging-build-app-artifiact]
   - get: ci-repo
   - get: app-repo
-  - task: build-app-code-image
+  - task: staging-build-app-code-image
     file: ci-repo/tasks/docker_build_context_image.yml # TODO Add this file
     params:
       # the folder our Dockerfile and other docker context files are located in the input docker-repo
@@ -53,6 +70,10 @@ jobs:
       tag_as_latest: true
       tag_file: app-staging-version/version
 
+
+#######################################################################
+###################### resources #########################
+#######################################################################
 resources:
   - name: app-repo
     type: git
