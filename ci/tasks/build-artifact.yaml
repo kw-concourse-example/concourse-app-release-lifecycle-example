@@ -34,7 +34,8 @@ run:
 
     # create / simulate something "we compile" so that is our compile step and our compiled source lands in ./target
     mkdir -p ./target
-    cp $CI_BASE/app/.git/ref ./target/version
+    cp $CI_BASE/app/.git/ref ./target/shasum
+    echo $VERSION > ./target/version
 
     # package our code and put it into our putput folder
     echo "creating output artifact to $OUTPUT_FOLDER/myapp-$VERSION.tgz"
