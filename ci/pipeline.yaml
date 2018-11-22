@@ -40,12 +40,13 @@ jobs:
   plan:
   - get: staging-app-artifact
     passed: [staging-build-app-artifiact]
+    trigger: true
   - get: app-staging-version
     passed: [staging-build-app-artifiact]
   - get: ci-repo
   - get: app-repo
   - task: staging-build-app-code-image
-    file: ci-repo/tasks/docker_build_context_image.yml # TODO Add this file
+    file: ci-repo/ci/tasks/build-docker-context.yaml # TODO Add this file
     params:
       # the folder our Dockerfile and other docker context files are located in the input docker-repo
       DOCKER_PATH: './docker'

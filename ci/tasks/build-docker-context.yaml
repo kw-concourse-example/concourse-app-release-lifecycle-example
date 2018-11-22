@@ -25,7 +25,6 @@ run:
   - |
     export CI_BASE=`pwd`
     export OUTPUT_FOLDER="$CI_BASE/docker-build-context"
-    export VERSION=`cat $CI_BASE/version/version`
 
     # make us relative to the app
     cd $CI_BASE/docker-repo
