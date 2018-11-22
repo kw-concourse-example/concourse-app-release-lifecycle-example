@@ -16,10 +16,10 @@ resources:
 - name: staging-artifact-storage
   type: s3
   source:
-    bucket: myapp/staging
+    bucket: myapp
     disable_ssl: true
     # our internal minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
-    endpoint: http://minio:9001
+    endpoint: http://minio:9000
     regexp: myapp.tgz
     access_key_id: minio
     secret_access_key: changeme
