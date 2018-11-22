@@ -13,6 +13,17 @@ resources:
     private_key: ((github-private-key))
     branch: master
 
+- name: staging-artifact-storage
+  type: s3
+  source:
+    bucket: myapp/staging
+    disable_ssl: true
+    # our internal minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
+    endpoint: http://minio:9001
+    regexp: myapp.tgz
+    access_key_id: minio
+    secret_access_key: changeme
+
 jobs:
 - name: build-app
   plan:
@@ -23,3 +34,8 @@ jobs:
     file: ci-repo/ci/tasks/build-artifact.yaml
     input_mapping:
       app: app-repo
+    output_mapping:
+      artifact: code-artifact
+  - put: staging-artifact-storage
+    params:
+      file: code-artifact/myapp.tgz

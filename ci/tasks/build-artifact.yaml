@@ -4,11 +4,14 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: alpine
-    tag: "3.6"
+    repository: debian
+    tag: "stretch"
 
 inputs:
 - name: app
+
+output:
+- name: artifact
 
 run:
   path: sh
@@ -16,5 +19,18 @@ run:
   - -ec
   - |
     export CI_BASE=`pwd`
+    export OUTPUT_FOLDER="$CI_BASE/artificat"
+
+    # make us relative to the app
     cd $CI_BASE/app
+
+    # debug info
+    echo "git sha sum is:"
     cat "$CI_BASE/app/.git/ref"
+
+    # create / simulate something "we compile" so that is our compile step and our compiled source lands in ./target
+    mkdir ./target
+    cp $CI_BASE/app/.git/ref ./target/version
+
+    # package our code and put it into our putput folder
+    tar czf $OUTPUT_FOLDER/myapp.tgz target
