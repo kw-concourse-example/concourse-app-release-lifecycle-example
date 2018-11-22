@@ -6,7 +6,7 @@
 2. run `./login.sh`
 3. go back to this repo and run `./deploy.sh`
 4. connect to `http://localhost:9001/minio` with credentials minio / changeme
-5. Create the bucket ( + sign in the bottom right corner ) called `myapp`
+5. Create the bucket `myapp` ( + sign in the bottom right corner )
 
  
 Your done :) Start the job 
