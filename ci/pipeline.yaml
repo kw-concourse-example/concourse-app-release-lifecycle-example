@@ -1,5 +1,11 @@
-
 resources:
+- name: ci-repo
+  type: git
+  source:
+    uri: git@github.com:kw-concourse-example/concourse-app-release-lifecycle-example
+    private_key: ((github-private-key))
+    branch: master
+
 - name: app-repo
   type: git
   source:
@@ -10,9 +16,10 @@ resources:
 jobs:
 - name: build-app
   plan:
+  - get: ci-repo
   - get: app-repo
-    trigger: trye
+    trigger: true
   - task: build-artificat
-    file: repo/ci/tasks/build-artifact.yaml
+    file: ci-repo/ci/tasks/build-artifact.yaml
     input_mapping:
       app: app-repo
