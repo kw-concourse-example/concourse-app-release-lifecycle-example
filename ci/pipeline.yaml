@@ -1,5 +1,5 @@
 jobs:
-- name: build-app
+- name: build-app-artifiact
   plan:
   - get: ci-repo
   - get: app-staging-version
@@ -14,37 +14,50 @@ jobs:
       version: app-staging-version
     output_mapping:
       artifact: code-artifact
-  - put: staging-artifact-storage
+  - put: staging-app-artifact
     params:
       # this is NOT regexp bu bashism wildcard!!
       file: code-artifact/myapp-*.tgz
 
 - name: build-app-code-image
   plan:
-  - get: staging-artifact-storage
-    passed: [build-app]
+  - get: staging-app-artifact
+    passed: [build-app-artifiact]
+  - get: app-staging-version
+    passed: [build-app-artifiact]
   - get: ci-repo
-  - get: app-code-image-src
+  - get: app-repo
   - task: build-app-code-image
     file: ci-repo/tasks/docker_build_context_image.yml # TODO Add this file
-    image: make-image # TODO: Make image to run the build? Specify some public container with linux capabilisties
-    input_mapping:
-      repo: app-code-image-src
     params:
-      DOCKER_PATH: ""
+      # the folder our Dockerfile and other docker context files are located in the input docker-repo
+      DOCKER_PATH: './docker'
+      # the filename of our app artifact in the app-artifact input
+      APP_ARTIFACT_SOURCE_FILENAME: myapp-*.tgz
+      # the expected filename of the app artifact in the Dockerfile of the app app-code image, see
+      # https://github.com/kw-concourse-example/concourse-example-app/blob/master/docker/Dockerfile#L5
+      APP_ARTIFACT_DEST_FILENAME: myapp.tgz
+    input_mapping:
+      # the input where are Dockerfile is located
+      docker-repo: app-repo
+      # the input of our app artifact
+      app-artificat: staging-app-artifact
     output_mapping:
+      # this will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
+      # using the docker-resource
       docker-build-context: build-context
-  - put: app-code-image
+  - put: app-code-docker-image
     get_params: { skip_download : true }
     params:
       build: build-context
       tag_as_latest: true
+      tag_file: app-staging-version/version
 
 resources:
   - name: app-repo
     type: git
     source:
-      uri: git@github.com:kw-concourse-example/concourse-example-app
+      uri: ((app.git-repo))
       private_key: ((github-private-key))
       branch: master
 
@@ -52,39 +65,26 @@ resources:
     type: semver
     source:
       driver: git
-      uri: git@github.com:kw-concourse-example/concourse-example-app
+      uri: ((app.git-repo))
       branch: version
       file: staging-version
       private_key: ((github-private-key))
-
-  - name: app-code-image-src
-    type: git
-    source:
-      uri: git@github.com:kw-concourse-example/concourse-example-app
-      private_key: ((github-private-key))
-      branch: master
 
   - name: app-code-docker-image
     type: docker-image-resource-ng
     check_every: 5m
     source:
-      email: ((docker.user))@nonsense.local
-      username: ((docker.user))
-      password: ((docker.password))
-      # TODO: ADD a registry endpoint we can use.
-      repository: todo.add.an.example.registry.com/example_image
-      login:
-        - username:           ((docker.user))
-          password:           ((docker.password))
-          registry:           todo.add.an.example.registry.com
-      tag:                    latest
+      email: ((docker-registry.user))@nonsense.local
+      username: ((docker-registry.user))
+      password: ((docker-registry.password))
+      repository: ((app.docker-image)) # like kwexample/concourse-example-app
 
-  - name: staging-artifact-storage
+  - name: staging-app-artifact
     type: s3
     source:
       bucket: myapp
       disable_ssl: true
-      # our internal minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
+      # our internal Minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
       endpoint: http://minio:9000
       # this needs to be actual regexp
       regexp: myapp-(.*).tgz
@@ -94,7 +94,7 @@ resources:
   - name: ci-repo
     type: git
     source:
-      uri: git@github.com:kw-concourse-example/concourse-app-release-lifecycle-example
+      uri: ((ci.git-repo))
       private_key: ((github-private-key))
       branch: master
 

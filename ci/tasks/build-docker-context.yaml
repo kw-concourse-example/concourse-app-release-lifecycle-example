@@ -1,0 +1,37 @@
+---
+platform: linux
+params:
+  DOCKER_PATH: "./"
+  APP_ARTIFACT_SOURCE_FILENAME: ""
+  APP_ARTIFACT_DEST_FILENAME: "app.tgz"
+
+image_resource:
+  type: docker-image
+  source:
+    repository: debian
+    tag: "stretch"
+
+inputs:
+- name: docker-repo
+- name: app-artificat
+
+outputs:
+- name: docker-build-context
+
+run:
+  path: sh
+  args:
+  - -ec
+  - |
+    export CI_BASE=`pwd`
+    export OUTPUT_FOLDER="$CI_BASE/docker-build-context"
+    export VERSION=`cat $CI_BASE/version/version`
+
+    # make us relative to the app
+    cd $CI_BASE/docker-repo
+
+    # copy our whole docker context to our output folder
+    cp -fr $DOCKER_PATH/* $OUTPUT_FOLDER/
+
+    # add our app artificat to the docker context
+    cp ${CI_BASE}/app-artificat/$APP_ARTIFACT_FILENAME $OUTPUT_FOLDER/$APP_ARTIFACT_DEST_FILENAME
