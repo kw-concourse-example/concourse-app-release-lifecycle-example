@@ -27,8 +27,10 @@ run:
     cd $CI_BASE/app
 
     # debug info
-    echo "git sha sum is:"
+    print "git sha sum is:"
     cat "$CI_BASE/app/.git/ref"
+    echo
+    echo "version is: $VERSION"
 
     # create / simulate something "we compile" so that is our compile step and our compiled source lands in ./target
     mkdir -p ./target

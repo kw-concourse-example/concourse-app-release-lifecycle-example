@@ -1,3 +1,23 @@
+jobs:
+- name: build-app
+  plan:
+  - get: ci-repo
+  - get: app-staging-version
+    params:
+      pre: alpha
+  - get: app-repo
+    trigger: true
+  - task: build-artificat
+    file: ci-repo/ci/tasks/build-artifact.yaml
+    input_mapping:
+      app: app-repo
+      version: app-staging-version
+    output_mapping:
+      artifact: code-artifact
+  - put: staging-artifact-storage
+    params:
+      file: code-artifact/myapp-*.tgz
+
 resources:
 - name: ci-repo
   type: git
@@ -17,7 +37,7 @@ resources:
   type: semver
   source:
     driver: git
-    uri: git@github.com:concourse/concourse.git
+    uri: git@github.com:kw-concourse-example/concourse-example-app
     branch: version
     file: staging-version
     private_key: ((github-private-key))
@@ -30,27 +50,5 @@ resources:
     # our internal minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
     endpoint: http://minio:9000
     regexp: myapp-*.tgz
-    versioned_file: myapp.tgz
     access_key_id: minio
     secret_access_key: changeme
-
-jobs:
-- name: build-app
-  plan:
-  - get: ci-repo
-  - get: app-staging-version
-    params:
-      pre: alpha
-  - get: app-repo
-    trigger: true
-  - get: app-staging-version
-  - task: build-artificat
-    file: ci-repo/ci/tasks/build-artifact.yaml
-    input_mapping:
-      app: app-repo
-      version: app-staging-version
-    output_mapping:
-      artifact: code-artifact
-  - put: staging-artifact-storage
-    params:
-      file: code-artifact/myapp-*.tgz
