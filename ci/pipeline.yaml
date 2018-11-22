@@ -19,6 +19,8 @@ jobs:
       # this is NOT regexp bu bashism wildcard!!
       file: code-artifact/myapp-*.tgz
   - put: app-staging-version
+    params:
+      file: app-staging-version/version
 
 resources:
 - name: ci-repo
