@@ -37,4 +37,5 @@ run:
     cp $CI_BASE/app/.git/ref ./target/version
 
     # package our code and put it into our putput folder
+    echo "creating output artifact to $OUTPUT_FOLDER/myapp-$VERSION.tgz"
     tar czf $OUTPUT_FOLDER/myapp-$VERSION.tgz target

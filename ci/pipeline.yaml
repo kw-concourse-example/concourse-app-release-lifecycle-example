@@ -16,7 +16,9 @@ jobs:
       artifact: code-artifact
   - put: staging-artifact-storage
     params:
+      # this is NOT regexp bu bashism wildcard!!
       file: code-artifact/myapp-*.tgz
+  - put: app-staging-version
 
 resources:
 - name: ci-repo
@@ -49,6 +51,7 @@ resources:
     disable_ssl: true
     # our internal minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
     endpoint: http://minio:9000
-    regexp: myapp-*.tgz
+    # this needs to be actual regexp
+    regexp: myapp-(.*).tgz
     access_key_id: minio
     secret_access_key: changeme
