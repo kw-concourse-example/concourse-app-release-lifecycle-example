@@ -33,4 +33,4 @@ run:
     cp -fr $DOCKER_PATH/* $OUTPUT_FOLDER/
 
     # add our app artificat to the docker context
-    cp ${CI_BASE}/app-artificat/$APP_ARTIFACT_FILENAME $OUTPUT_FOLDER/$APP_ARTIFACT_DEST_FILENAME
+    cp ${CI_BASE}/app-artificat/$APP_ARTIFACT_SOURCE_FILENAME $OUTPUT_FOLDER/$APP_ARTIFACT_DEST_FILENAME
