@@ -21,16 +21,17 @@ run:
   args:
   - -ec
   - |
-    # Make sure tar is installed (DO NOT use this in production, use a proper docker image)
-    apt-get update && apt-get install -y tar
-
     export CI_BASE=$(pwd)
+
+    # Extract artifact and export infos into env
     cd ${CI_BASE}/artifact
-    tar xzf myapp*.tgz .
+    tar xzf myapp*.tgz
     export VERSION=$(cat target/version)
     export SHASUM=$(cat target/shasum)
     echo "VERSION: $VERSION"
     echo "SHASUM: $SHASUM"
+
+    # Copy the repo by using the local inout directory
     cd ${CI_BASE}
     git clone ./repo ./repo-modified
     echo "Merging ${ORIGIN_BRANCH} ${SHASUM} into ${TARGET_BRANCH}."
