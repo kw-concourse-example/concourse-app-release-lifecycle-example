@@ -136,14 +136,14 @@ jobs:
 
 
 #################################################################################
-################### release final artifact transformation #######################
+################### final release artifact transformation #######################
 #################################################################################
 
 - name: promote-candidate-artifact-to-final-release-artifact
   plan:
   - get: app-release-version
     params:
-      final: patch
+      bump: final
   - get: release-app-artifact
     passed: [promote-app-artifact-to-candidate-release]
   - get: ci-repo
@@ -151,7 +151,7 @@ jobs:
     file: ci-repo/ci/tasks/promote-artifact.yaml
     input_mapping:
       # The input app artifact that will be transformed
-      app-artifact: staging-app-artifact
+      app-artifact: release-app-artifact
       promote-to-version: app-release-version
     output_mapping:
       transformed-artifact: release-artifact
