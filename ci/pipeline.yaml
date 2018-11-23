@@ -66,7 +66,8 @@ jobs:
       # using the docker-resource
       docker-build-context: build-context
   - put: app-code-docker-image
-    get_params: { skip_download : true }
+    get_params:
+      skip_download : true
     params:
       build: build-context
       tag_as_latest: true
@@ -79,14 +80,14 @@ jobs:
   plan:
   - get: app-release-version
     params:
-      bump: minor
+      pre: rc
   - get: staging-app-artifact
     passed: [staging-build-app-code-image]
   - get: ci-repo
   - task: staging-build-app-code-image
     file: ci-repo/ci/tasks/promote-artifact.yaml
     input_mapping:
-      # The input app artifact that will be trasnformed
+      # The input app artifact that will be transformed
       app-artifact: staging-app-artifact
       promote-to-version: app-release-version
     output_mapping:
@@ -98,6 +99,8 @@ jobs:
       # this is NOT regexp bu bashism wildcard!!
       file: release-artifact/myapp-*.tgz
   - put: app-release-version
+    params:
+      file: app-release-version/version
 
 
 ##########################################################
