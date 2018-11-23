@@ -3,6 +3,7 @@ groups:
   jobs:
   - staging-build-app-artifiact
   - staging-build-app-code-image
+  - bump-patch-release-version
   - promote-to-candidate
   - promote-to-release
   - merge-master-and-tag-with-release-version
@@ -90,6 +91,7 @@ jobs:
 - name: promote-to-candidate
   plan:
   - get: app-release-version
+    passed: [bump-patch-release-version]
     params:
       pre: rc
   - get: staging-app-artifact
