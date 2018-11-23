@@ -114,6 +114,7 @@ jobs:
   plan:
   - get: release-app-artifact
     passed: [promote-app-artifact-to-release]
+    trigger: true
   - get: ci-repo
   - get: app-repo-develop
   - get: app-repo-master
