@@ -58,7 +58,9 @@ run:
     # Copy the repo by using the local inout directory
     # Important: The target dir will have the git remote set to the local directory!!!
     cd ${CI_BASE}
-    git clone ./repo ./repo-modified
+
+    # Copy all files and folders from the repo, including hidden files (hence the repo/[.] dot at the end!)
+    cp -ar repo/. repo-modified/
     echo "Merging ${ORIGIN_BRANCH} ${SHASUM} into ${TARGET_BRANCH}."
 
     # Start git manipulations
