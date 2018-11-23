@@ -21,6 +21,10 @@ run:
   args:
   - -ec
   - |
+
+    # Make sure tar is installed (DO NOT use this in production, use a proper docker image)
+    apk add --update tar
+
     export CI_BASE=$(pwd)
     cd ${CI_BASE}/artifact
     tar xzf myapp*.tgz .
