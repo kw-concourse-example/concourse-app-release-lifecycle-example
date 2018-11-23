@@ -3,7 +3,8 @@ groups:
   jobs:
   - staging-build-app-artifiact
   - staging-build-app-code-image
-  - promote-app-artifact-to-release
+  - promote-app-artifact-to-candidate-release
+  - promote-app-artifact-to-final-release
   - merge-and-tag-app-repo
 
 jobs:
@@ -74,10 +75,10 @@ jobs:
       tag_as_latest: true
       tag_file: app-staging-version/version
 
-#######################################################################
-################### release artifact transformation ###################
-#######################################################################
-- name: promote-app-artifact-to-release
+#################################################################################
+################### release candidate artifact transformation ###################
+#################################################################################
+- name: promote-app-artifact-to-candidate-release
   plan:
   - get: app-release-version
     params:
@@ -85,7 +86,7 @@ jobs:
   - get: staging-app-artifact
     passed: [staging-build-app-code-image]
   - get: ci-repo
-  - task: staging-build-app-code-image
+  - task: run-promote-staging-artifact-to-candidate-release-artifact
     file: ci-repo/ci/tasks/promote-artifact.yaml
     input_mapping:
       # The input app artifact that will be transformed
@@ -102,6 +103,64 @@ jobs:
       file: app-release-version/version
 
 
+#################################################################################
+################### tag in git repo for candidate release #######################
+#################################################################################
+
+# The artifact from the previous job contains the version and the shasum.
+# Merge and tagging require this information - using the artifact makes sure
+# we have the right one in any case in concourse!
+- name: tag-app-repo
+  plan:
+  - get: release-app-artifact
+    passed: [promote-app-artifact-to-candidate-release]
+    trigger: true
+  - get: ci-repo
+  - get: app-repo-develop
+  - get: app-repo-master
+  - get: app-release-version
+  - task: run-tag-and-optional-merge-task
+    file: ci-repo/ci/tasks/tag-and-optional-merge.yaml
+    params:
+      GIT_PRIVATE_KEY: ((github-private-key))
+      TARGET_BRANCH: 'master'
+    input_mapping:
+      repo: app-repo-develop
+      artifact: release-app-artifact
+    output_mapping:
+      repo-modified: app-repo-develop-modified
+  - put: app-repo-master
+    params:
+      repository: app-repo-develop-modified
+
+
+#################################################################################
+################### release final artifact transformation #######################
+#################################################################################
+
+- name: promote-app-artifact-to-final-release
+  plan:
+  - get: app-release-version
+    params:
+      final: patch
+  - get: release-app-artifact
+    passed: [promote-app-artifact-to-candidate-release]
+  - get: ci-repo
+  - task: run-promote-staging-artifact-to-final-release-artifact
+    file: ci-repo/ci/tasks/promote-artifact.yaml
+    input_mapping:
+      # The input app artifact that will be transformed
+      app-artifact: staging-app-artifact
+      promote-to-version: app-release-version
+    output_mapping:
+      transformed-artifact: release-artifact
+  - put: release-app-artifact
+    params:
+      # this is NOT regexp bu bashism wildcard!!
+      file: release-artifact/myapp-*.tgz
+  - put: app-release-version
+    params:
+      file: app-release-version/version
 
 #################################################################################
 ################### merge into master and add tag in git repo ###################
@@ -113,14 +172,14 @@ jobs:
 - name: merge-and-tag-app-repo
   plan:
   - get: release-app-artifact
-    passed: [promote-app-artifact-to-release]
+    passed: [promote-app-artifact-to-final-release]
     trigger: true
   - get: ci-repo
   - get: app-repo-develop
   - get: app-repo-master
   - get: app-release-version
-  - task: run-tag-and-merge-task
-    file: ci-repo/ci/tasks/tag-and-merge.yaml
+  - task: run-tag-and-optional-merge-task
+    file: ci-repo/ci/tasks/tag-and-optional-merge.yaml
     params:
       GIT_PRIVATE_KEY: ((github-private-key))
       ORIGIN_BRANCH: 'develop'

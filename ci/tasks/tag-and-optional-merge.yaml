@@ -1,9 +1,12 @@
 ---
 platform: linux
 params:
+  # The TARGET_BRANCH param is mandatory. The specified TARGET_BRANCH is just tagged and no merge occurs when ORIGIN_BRANCH is empty.
+  # When specifying an ORIGIN_BRANCH a merge will be performed from ORIGIN_BRANCH (sth. like develop)
+  # to TARGET_BRANCH (sth like master).
   GIT_PRIVATE_KEY: ""
-  ORIGIN_BRANCH: "develop"
-  TARGET_BRANCH: "master"
+  ORIGIN_BRANCH: ""
+  TARGET_BRANCH: ""
 
 image_resource:
   type: docker-image
@@ -22,6 +25,12 @@ run:
   args:
   - -ec
   - |
+
+    # TODO: Think about using the current branch of the passed repo when Target is empty. Right we force it, as we are able to checkout every branch, no matter which branch the resource itself has.
+    if [ -z "$TARGET_BRANCH" ]; then
+      echo "Please specify a target branch to tag. If you specify a TARGET_BRANCH plus an ORIGIN_BRANCH, the ORIGIN_BRANCH will be merged into the TARGET_BANCH, and TARGET_BRANCH will be tagged as well."
+      exit 1
+    fi
 
     # ---------------------------------------- git ssh key / config deployment
     echo  "Deploy git ssh key"
@@ -54,8 +63,11 @@ run:
     # Configure git to be able to always fetch all branches
     git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
-    # Fetch both specified branches - be sure to have both available. This makes the thing easier for the caller.
-    git fetch origin ${ORIGIN_BRANCH}
+    # Fetch all specified branches - be sure to have them available.
+    if [ ! -z "$ORIGIN_BRANCH" ]; then
+      git fetch origin ${ORIGIN_BRANCH}
+    fi
+
     git fetch origin ${TARGET_BRANCH}
 
     # Copy the repo by using the local inout directory
@@ -64,21 +76,28 @@ run:
 
     # Copy all files and folders from the repo, including hidden files (hence the repo/[.] dot at the end!)
     cp -ar repo/. repo-modified/
-    echo "Merging ${ORIGIN_BRANCH} ${SHASUM} into ${TARGET_BRANCH}."
 
     # Start git manipulations
     cd ${CI_BASE}/repo-modified
 
-    # Make sure we are on the specified origin branch, the param has higher precedence than the passed repo
-    git checkout ${ORIGIN_BRANCH}
+    if [ ! -z "$ORIGIN_BRANCH"]; then
+      # Make sure we are on the specified origin branch, the param has higher precedence than the passed repo
+      git checkout ${ORIGIN_BRANCH}
 
-    # Reset hard to be sure we are on the shasum of the commit of the artifact passed into this task.
+      # Reset hard to be sure we are on the shasum of the commit of the artifact passed into this task.
+      git reset --hard ${SHASUM}
+
+      # Merge
+      git checkout ${TARGET_BRANCH}
+      git merge ${ORIGIN_BRANCH}
+
+      # Comment in the below command when using --no-ff for the merge command
+      # git commit -am "Merge ${ORIGIN_BRANCH} (${SHASUM}) into ${TARGET_BRANCH}."
+    fi
+
+    # Idempotent: ensure we are on the right branch and the right shasum to tag, no matter ifmerged or not.
+    git checkout ${TARGET_BRANCH}
     git reset --hard ${SHASUM}
 
-    # Merge
-    git checkout ${TARGET_BRANCH}
-    git merge ${ORIGIN_BRANCH}
     git tag -a ${VERSION} -m "Auto Tagging by Kontextwork Concourse CI" ${SHASUM}
 
-    # Comment in the below command when using --no-ff for the merge command
-    # git commit -am "Merge ${ORIGIN_BRANCH} (${SHASUM}) into ${TARGET_BRANCH}."
