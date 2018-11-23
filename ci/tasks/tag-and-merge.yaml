@@ -37,6 +37,9 @@ run:
     eval "$(ssh-agent -s)"; ssh-add ~/.ssh/id_rsa
     # ------------------------------------------------------------------------
 
+    git config --global user.email "foo@mailinator.com"
+    git config --global user.name "Foo At Mailinator"
+    
     export CI_BASE=$(pwd)
     # Extract artifact and export infos into env
     cd ${CI_BASE}/artifact
