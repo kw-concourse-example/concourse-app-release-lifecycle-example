@@ -4,6 +4,7 @@ groups:
   - staging-build-app-artifiact
   - staging-build-app-code-image
   - promote-app-artifact-to-release
+  - merge-and-tag-app-repo
 
 jobs:
 #######################################################################
@@ -15,12 +16,12 @@ jobs:
   - get: app-staging-version
     params:
       pre: alpha
-  - get: app-repo
+  - get: app-repo-develop
     trigger: true
   - task: build-artificat
     file: ci-repo/ci/tasks/build-artifact.yaml
     input_mapping:
-      app: app-repo
+      app: app-repo-develop
       version: app-staging-version
     output_mapping:
       artifact: code-artifact
@@ -45,7 +46,7 @@ jobs:
   - get: app-staging-version
     passed: [staging-build-app-artifiact]
   - get: ci-repo
-  - get: app-repo
+  - get: app-repo-develop
   - task: staging-build-app-code-image
     file: ci-repo/ci/tasks/build-docker-context.yaml # TODO Add this file
     params:
@@ -58,7 +59,7 @@ jobs:
       APP_ARTIFACT_DEST_FILENAME: myapp.tgz
     input_mapping:
       # the input where are Dockerfile is located
-      docker-repo: app-repo
+      docker-repo: app-repo-develop
       # the input of our app artifact
       app-artificat: staging-app-artifact
     output_mapping:
@@ -91,8 +92,6 @@ jobs:
       app-artifact: staging-app-artifact
       promote-to-version: app-release-version
     output_mapping:
-      # This will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
-      # using the docker-resource
       transformed-artifact: release-artifact
   - put: release-app-artifact
     params:
@@ -103,11 +102,48 @@ jobs:
       file: app-release-version/version
 
 
+
+#################################################################################
+################### merge into master and add tag in git repo ###################
+#################################################################################
+
+# The artifact from the previous job contains the version and the shasum.
+# Merge and tagging require this information - using the artifact makes sure
+# we have the right one in any case in concourse!
+- name: merge-and-tag-app-repo
+  plan:
+  - get: release-app-artifact
+    passed: [promote-app-artifact-to-release]
+  - get: ci-repo
+  - get: app-repo-develop
+  - get: app-repo-master
+  - get: app-release-version
+  - task: run-merge-and-tag-task
+    file: ci-repo/ci/tasks/merge-and-tag.yaml
+    params:
+      ORIGIN_BRANCH: 'develop'
+      TARGET_BRANCH: 'master'
+    input_mapping:
+      repo: app-repo-develop
+      artifact: release-app-artifact
+    output_mapping:
+      repo-modified: app-repo-develop-modified
+  - put: app-repo-master
+    params:
+      repository: app-repo-develop-modified
+
 ##########################################################
 ###################### resources #########################
 ##########################################################
 resources:
-  - name: app-repo
+  - name: app-repo-develop
+    type: git
+    source:
+      uri: ((app.git-repo))
+      private_key: ((github-private-key))
+      branch: develop
+
+  - name: app-repo-master
     type: git
     source:
       uri: ((app.git-repo))

@@ -1,0 +1,48 @@
+---
+platform: linux
+params:
+  ORIGIN_BRANCH: "develop"
+  TARGET_BRANCH: "master"
+
+image_resource:
+  type: docker-image
+  source:
+    repository: eugenmayer/golang-builder
+
+inputs:
+  - name: repo
+  - name: artifact
+
+outputs:
+  - name: repo-modified
+
+run:
+  path: sh
+  args:
+  - -ec
+  - |
+    export CI_BASE=$(pwd)
+    cd ${CI_BASE}/artifact
+    tar xzf myapp*.tgz .
+    export VERSION=$(cat target/version)
+    export SHASUM=$(cat target/shasum)
+    echo "VERSION: $VERSION"
+    echo "SHASUM: $SHASUM"
+    cd ${CI_BASE}
+    git clone ./repo ./repo-modified
+    echo "Merging ${ORIGIN_BRANCH} ${SHASUM} into ${TARGET_BRANCH}."
+
+    # Start git manipulations
+    cd repo-modified
+
+    # Make sure we are on the specified origin branch, the param has higher precedence than the passed repo
+    git checkout ${ORIGIN_BRANCH}
+
+    # Reset hard to be sure we are on the shasum of the commit of the artifact passed into this task.
+    git reset --hard ${SHASUM}
+
+    # Merge
+    git checkout ${TARGET_BRANCH}
+    git merge ${ORIGIN_BRANCH}
+    git tag -a ${VERSION} -m "Auto Tagging by Kontextwork Concourse CI" ${SHASUM}
+    git commit -am "Merge ${ORIGIN_BRANCH} (${SHASUM}) into ${TARGET_BRANCH}."
