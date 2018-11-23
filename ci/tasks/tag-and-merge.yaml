@@ -46,11 +46,12 @@ run:
     echo "VERSION: $VERSION"
     echo "SHASUM: $SHASUM"
 
+    cd ${CI_BASE}/repo
+
     # Configure git to be able to always fetch all branches
     git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
     # Fetch both specified branches - be sure to have both available. This makes the thing easier for the caller.
-    cd ${CI_BASE}/repo
     git fetch origin ${ORIGIN_BRANCH}
     git fetch origin ${TARGET_BRANCH}
 
