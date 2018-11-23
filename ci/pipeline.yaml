@@ -118,8 +118,8 @@ jobs:
   - get: app-repo-develop
   - get: app-repo-master
   - get: app-release-version
-  - task: run-merge-and-tag-task
-    file: ci-repo/ci/tasks/merge-and-tag.yaml
+  - task: run-tag-and-merge-task
+    file: ci-repo/ci/tasks/tag-and-merge.yaml
     params:
       GIT_PRIVATE_KEY: ((github-private-key))
       ORIGIN_BRANCH: 'develop'

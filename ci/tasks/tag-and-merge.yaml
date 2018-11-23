@@ -54,6 +54,10 @@ run:
     # Start git manipulations
     cd repo-modified
 
+    # Pull both specified branches - be sure to have both available. This makes the thing easier for the caller.
+    git pull origin ${ORIGIN_BRANCH}
+    git pull origin ${TARGET_BRANCH}
+
     # Make sure we are on the specified origin branch, the param has higher precedence than the passed repo
     git checkout ${ORIGIN_BRANCH}
 
