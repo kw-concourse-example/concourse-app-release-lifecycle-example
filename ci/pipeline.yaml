@@ -2,7 +2,8 @@ groups:
 - name: staging
   jobs:
   - staging-build-app-artifiact
-  - staging-staging-build-app-code-image
+  - staging-build-app-code-image
+  - promote-app-artifact-to-release
 
 jobs:
 #######################################################################
@@ -36,7 +37,7 @@ jobs:
 #######################################################################
 ###################### app-code: Docker image #########################
 #######################################################################
-- name: staging-staging-build-app-code-image
+- name: staging-build-app-code-image
   plan:
   - get: staging-app-artifact
     passed: [staging-build-app-artifiact]
@@ -71,10 +72,36 @@ jobs:
       tag_as_latest: true
       tag_file: app-staging-version/version
 
+#######################################################################
+################### release artifact transformation ###################
+#######################################################################
+- name: promote-app-artifact-to-release
+  plan:
+  - get: app-release-version
+    params:
+      bump: minor
+  - get: staging-app-artifact
+    passed: [staging-build-app-code-image]
+  - get: ci-repo
+  - task: staging-build-app-code-image
+    file: ci-repo/ci/tasks/promote-artifact.yaml
+    input_mapping:
+      # the input app artifact that will be trasnformed
+      app-artificat: staging-app-artifact
+    output_mapping:
+      # this will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
+      # using the docker-resource
+      transformed-artifact: candidate-artifact
+  - put: release-app-artifact
+    params:
+      # this is NOT regexp bu bashism wildcard!!
+      file: release-artifact/myapp-*.tgz
+  - put: app-release-version
 
-#######################################################################
+
+##########################################################
 ###################### resources #########################
-#######################################################################
+##########################################################
 resources:
   - name: app-repo
     type: git
@@ -92,6 +119,15 @@ resources:
       file: staging-version
       private_key: ((github-private-key))
 
+  - name: app-release-version
+    type: semver
+    source:
+      driver: git
+      uri: ((app.git-repo))
+      branch: version
+      file: release-version
+      private_key: ((github-private-key))
+
   - name: app-code-docker-image
     type: docker-image-resource-ng
     check_every: 5m
@@ -102,6 +138,18 @@ resources:
       repository: ((app.docker-image)) # like kwexample/concourse-example-app
 
   - name: staging-app-artifact
+    type: s3
+    source:
+      bucket: myapp
+      disable_ssl: true
+      # our internal Minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
+      endpoint: http://minio:9000
+      # this needs to be actual regexp
+      regexp: myapp-(.*).tgz
+      access_key_id: minio
+      secret_access_key: changeme
+
+  - name: release-app-artifact
     type: s3
     source:
       bucket: myapp

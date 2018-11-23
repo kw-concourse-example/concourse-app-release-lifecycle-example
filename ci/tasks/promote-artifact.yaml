@@ -9,34 +9,31 @@ image_resource:
 
 inputs:
 - name: app-artifact
-- name: version
+- name: promote-to-version
 
 outputs:
-- name: artifact
+- name: transformed-artifact
 
-# TODO: Implement, this is just acopy from the build-artifact file.
 run:
   path: sh
   args:
   - -ec
   - |
     export CI_BASE=`pwd`
-    export OUTPUT_FOLDER="$CI_BASE/artifact"
-    export VERSION=`cat $CI_BASE/version/version`
-    # make us relative to the app-artifact
-    cd $CI_BASE/app
+    export OUTPUT_FOLDER="$CI_BASE/transformed-artifact"
+    export PROMOTE_TO_VERSION=`cat $CI_BASE/promote-to-version/version`
 
-    # debug info
-    printf "git sha sum is:"
-    cat "$CI_BASE/app/.git/ref"
-    echo
-    echo "version is: $VERSION"
+    mkdir -p package_dir && cd package_dir
+    tar xzf ${CI_BASE}/app-artifact/myapp*.tgz -C ./
 
-    # create / simulate something "we compile" so that is our compile step and our compiled source lands in ./target
-    mkdir -p ./target
-    cp $CI_BASE/app/.git/ref ./target/shasum
-    echo $VERSION > ./target/version
+    export PREVIOUS_VERSION=$(cat /target/version)
+    export SHASUM=$(cat /target/shasum)
+    echo "TRANSFORMING ARTIFACT WITH SHASUM: ${SHASUM}"
+    echo "TRANSFORMING ARTIFACT FROM VERSION: ${PREVIOUS_VERSION}"
+    echo "TRANSFORMING ARTIFACT TO VERSION: ${PROMOTE_TO_VERSION}"
 
-    # package our code and put it into our putput folder
-    echo "creating output artifact to $OUTPUT_FOLDER/myapp-$VERSION.tgz"
-    tar czf $OUTPUT_FOLDER/myapp-$VERSION.tgz target
+    echo ${PROMOTE_TO_VERSION} > /target/version
+
+    tar czf myapp-$PROMOTE_TO_VERSION.tgz target
+
+    mv myapp-$PROMOTE_TO_VERSION.tgz ${CI_BASE}/transformed-artifact/
