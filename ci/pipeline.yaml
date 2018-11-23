@@ -86,12 +86,13 @@ jobs:
   - task: staging-build-app-code-image
     file: ci-repo/ci/tasks/promote-artifact.yaml
     input_mapping:
-      # the input app artifact that will be trasnformed
-      app-artificat: staging-app-artifact
+      # The input app artifact that will be trasnformed
+      app-artifact: staging-app-artifact
+      promote-to-version: app-release-version
     output_mapping:
-      # this will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
+      # This will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
       # using the docker-resource
-      transformed-artifact: candidate-artifact
+      transformed-artifact: release-artifact
   - put: release-app-artifact
     params:
       # this is NOT regexp bu bashism wildcard!!
