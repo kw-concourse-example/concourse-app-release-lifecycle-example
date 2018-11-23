@@ -39,7 +39,7 @@ run:
 
     git config --global user.email "foo@mailinator.com"
     git config --global user.name "Foo At Mailinator"
-    
+
     export CI_BASE=$(pwd)
     # Extract artifact and export infos into env
     cd ${CI_BASE}/artifact
@@ -79,4 +79,6 @@ run:
     git checkout ${TARGET_BRANCH}
     git merge ${ORIGIN_BRANCH}
     git tag -a ${VERSION} -m "Auto Tagging by Kontextwork Concourse CI" ${SHASUM}
-    git commit -am "Merge ${ORIGIN_BRANCH} (${SHASUM}) into ${TARGET_BRANCH}."
+
+    # Comment in the below command when using --no-ff for the merge command
+    # git commit -am "Merge ${ORIGIN_BRANCH} (${SHASUM}) into ${TARGET_BRANCH}."
