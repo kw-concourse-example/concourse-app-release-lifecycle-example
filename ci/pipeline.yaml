@@ -75,6 +75,15 @@ jobs:
       tag_as_latest: true
       tag_file: app-staging-version/version
 
+- name: bump-patch-release-version
+  plan:
+  - get: app-release-version
+    params:
+      bump: patch
+  - put: app-release-version
+    params:
+      file: app-release-version/version
+
 #################################################################################
 ################### release candidate artifact transformation ###################
 #################################################################################
