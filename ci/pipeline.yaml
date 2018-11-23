@@ -143,10 +143,11 @@ jobs:
   - get: release-app-artifact
     passed: [promote-to-release]
     trigger: true
+  - get: app-release-version
+    passed: [promote-to-release]
   - get: ci-repo
   - get: app-repo-develop
   - get: app-repo-master
-  - get: app-release-version
   - task: run-tag-and-optional-merge-task
     file: ci-repo/ci/tasks/tag-and-optional-merge.yaml
     params:
