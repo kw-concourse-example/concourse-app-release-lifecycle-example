@@ -4,8 +4,9 @@ groups:
   - staging-build-app-artifiact
   - staging-build-app-code-image
   - promote-app-artifact-to-candidate-release
-  - promote-app-artifact-to-final-release
-  - merge-and-tag-app-repo
+  - tag-master-with-candidate-version
+  - promote-candidate-artifact-to-final-release-artifact
+  - merge-master-and-tag-master-with-final-release-version
 
 jobs:
 #######################################################################
@@ -110,7 +111,7 @@ jobs:
 # The artifact from the previous job contains the version and the shasum.
 # Merge and tagging require this information - using the artifact makes sure
 # we have the right one in any case in concourse!
-- name: tag-app-repo
+- name: tag-master-with-candidate-version
   plan:
   - get: release-app-artifact
     passed: [promote-app-artifact-to-candidate-release]
@@ -138,7 +139,7 @@ jobs:
 ################### release final artifact transformation #######################
 #################################################################################
 
-- name: promote-app-artifact-to-final-release
+- name: promote-candidate-artifact-to-final-release-artifact
   plan:
   - get: app-release-version
     params:
@@ -169,10 +170,10 @@ jobs:
 # The artifact from the previous job contains the version and the shasum.
 # Merge and tagging require this information - using the artifact makes sure
 # we have the right one in any case in concourse!
-- name: merge-and-tag-app-repo
+- name: merge-master-and-tag-master-with-final-release-version
   plan:
   - get: release-app-artifact
-    passed: [promote-app-artifact-to-final-release]
+    passed: [promote-candidate-artifact-to-final-release-artifact]
     trigger: true
   - get: ci-repo
   - get: app-repo-develop
