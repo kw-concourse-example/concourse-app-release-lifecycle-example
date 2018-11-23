@@ -121,6 +121,7 @@ jobs:
   - task: run-merge-and-tag-task
     file: ci-repo/ci/tasks/merge-and-tag.yaml
     params:
+      GIT_PRIVATE_KEY: ((github-private-key))
       ORIGIN_BRANCH: 'develop'
       TARGET_BRANCH: 'master'
     input_mapping:

@@ -1,6 +1,7 @@
 ---
 platform: linux
 params:
+  GIT_PRIVATE_KEY: ""
   ORIGIN_BRANCH: "develop"
   TARGET_BRANCH: "master"
 
@@ -21,8 +22,22 @@ run:
   args:
   - -ec
   - |
-    export CI_BASE=$(pwd)
 
+    # ---------------------------------------- git ssh key / config deployment
+    echo  "Deploy git ssh key"
+    mkdir -p ~/.ssh
+    echo "${GIT_PRIVATE_KEY}" >> ~/.ssh/id_rsa
+
+    echo our ssh config for our dwdev alias
+    echo 'Host *' >> ~/.ssh/config
+    echo '  UserKnownHostsFile=/dev/null' >> ~/.ssh/config
+    echo '  StrictHostKeyChecking=no' >> ~/.ssh/config
+
+    chmod u=r,g=,o=  ~/.ssh/*
+    eval "$(ssh-agent -s)"; ssh-add ~/.ssh/id_rsa
+    # ------------------------------------------------------------------------
+
+    export CI_BASE=$(pwd)
     # Extract artifact and export infos into env
     cd ${CI_BASE}/artifact
     tar xzf myapp*.tgz
