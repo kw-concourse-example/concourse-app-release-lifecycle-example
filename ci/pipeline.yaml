@@ -3,7 +3,7 @@ groups:
   jobs:
   - staging-build-app-artifiact
   - staging-build-app-code-image
-  - promote-app-artifact-to-candidate-release
+  - promote-staging-artifact-to-candidate-artifact
   - tag-master-with-candidate-version
   - promote-candidate-artifact-to-final-release-artifact
   - merge-master-and-tag-master-with-final-release-version
@@ -79,7 +79,7 @@ jobs:
 #################################################################################
 ################### release candidate artifact transformation ###################
 #################################################################################
-- name: promote-app-artifact-to-candidate-release
+- name: promote-staging-artifact-to-candidate-artifact
   plan:
   - get: app-release-version
     params:
@@ -114,7 +114,7 @@ jobs:
 - name: tag-master-with-candidate-version
   plan:
   - get: release-app-artifact
-    passed: [promote-app-artifact-to-candidate-release]
+    passed: [promote-staging-artifact-to-candidate-artifact]
     trigger: true
   - get: ci-repo
   - get: app-repo-develop
@@ -145,7 +145,7 @@ jobs:
     params:
       bump: final
   - get: release-app-artifact
-    passed: [promote-app-artifact-to-candidate-release]
+    passed: [promote-staging-artifact-to-candidate-artifact]
   - get: ci-repo
   - task: run-promote-staging-artifact-to-final-release-artifact
     file: ci-repo/ci/tasks/promote-artifact.yaml
