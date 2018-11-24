@@ -11,13 +11,8 @@ jobs: []
 # jobs and job specific resourcs are all in pipeline/jobs/*
 
 resources: []
-# all common resources are under _common_resources.yaml - all those we use in several jobs
+# all global resources are under _global_resources.yaml - all those we use in several jobs
 
-resource_types:
-  - name: docker-image-resource-ng
-    type: docker-image
-    privileged: true
-    source:
-      repository: eugenmayer/concourse-docker-image-resource
-      tag: latest
+resource_types: []
+# all the global resource types can be found under _resource_types.yaml
 

@@ -1,0 +1,7 @@
+resource_types:
+- name: docker-image-resource-ng
+  type: docker-image
+  privileged: true
+  source:
+    repository: eugenmayer/concourse-docker-image-resource
+    tag: latest
