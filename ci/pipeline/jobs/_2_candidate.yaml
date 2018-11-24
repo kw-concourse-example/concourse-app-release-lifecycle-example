@@ -1,0 +1,38 @@
+jobs:
+
+#################################################################################
+################### release candidate artifact transformation ###################
+#################################################################################
+- name: promote-to-candidate
+  plan:
+  - get: candidate-app-version
+    params:
+      pre: rc
+  - get: app-artifact
+    passed: [staging-build-app-code-image]
+  - get: ci-repo
+  - task: promote-staging-artifact-to-candidate-release-artifact
+    file: ci-repo/ci/tasks/promote-artifact.yaml
+    input_mapping:
+      # The input app artifact that will be transformed
+      app-artifact: app-artifact
+      promote-to-version: release-app-version
+    output_mapping:
+      transformed-artifact: release-artifact
+  - put: app-artifact
+    params:
+      # this is NOT regexp but bashism wildcard!!
+      file: release-artifact/myapp-*.tgz
+  - put: candidate-app-version
+    params:
+      file: release-app-version/version
+
+resources:
+  - name: candidate-app-version
+    type: semver
+    source:
+      driver: git
+      uri: ((app.git-repo))
+      branch: version
+      file: release-version
+      private_key: ((github-private-key))

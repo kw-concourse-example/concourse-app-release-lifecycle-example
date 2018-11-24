@@ -1,0 +1,76 @@
+jobs:
+  #################################################################################
+  ################### final release artifact transformation #######################
+  #################################################################################
+  - name: promote-to-release
+    plan:
+    - get: release-app-version
+      params:
+        bump: final
+    - get: app-artifact
+      passed: [promote-to-candidate]
+    - get: ci-repo
+    - task: run-promote-staging-artifact-to-final-release-artifact
+      file: ci-repo/ci/tasks/promote-artifact.yaml
+      input_mapping:
+        # The input app artifact that will be transformed
+        app-artifact: app-artifact
+        promote-to-version: release-app-version
+      output_mapping:
+        transformed-artifact: release-artifact
+    - put: app-artifact
+      params:
+        # this is NOT regexp bu bashism wildcard!!
+        file: release-artifact/myapp-*.tgz
+    - put: release-app-version
+      params:
+        file: release-app-version/version
+
+
+  #################################################################################
+  ################### merge into master and add tag in git repo ###################
+  #################################################################################
+
+  # The artifact from the previous job contains the version and the shasum.
+  # Merge and tagging require this information - using the artifact makes sure
+  # we have the right one in any case in concourse!
+  - name: merge-master-and-tag-with-release-version
+    plan:
+    - get: app-artifact
+      passed: [promote-to-release]
+      trigger: true
+    - get: release-app-version
+      passed: [promote-to-release]
+    - get: ci-repo
+    - get: app-develop-repo
+    - get: app-master-repo
+    - task: run-tag-and-optional-merge-task
+      file: ci-repo/ci/tasks/tag-and-optional-merge.yaml
+      params:
+        GIT_PRIVATE_KEY: ((github-private-key))
+        ORIGIN_BRANCH: 'develop'
+        TARGET_BRANCH: 'master'
+      input_mapping:
+        repo: app-develop-repo
+        artifact: app-artifact
+      output_mapping:
+        repo-modified: app-develop-repo-modified
+    - put: app-master-repo
+      params:
+        repository: app-develop-repo-modified # Master will be checked out here.
+    # We patch after the release is completely finalized was successful,
+    # because candidate in the next cycle will only add rc-X.
+    - put: release-app-version
+      params:
+        file: release-app-version/version
+        bump: patch
+
+resources:
+  - name: release-app-version
+    type: semver
+    source:
+      driver: git
+      uri: ((app.git-repo))
+      branch: version
+      file: release-version
+      private_key: ((github-private-key))

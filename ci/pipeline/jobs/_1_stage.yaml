@@ -1,0 +1,77 @@
+jobs:
+  #######################################################################
+  ###################### app-code: artifact #############################
+  #######################################################################
+  - name: staging-build-app-artifiact
+    plan:
+    - get: ci-repo
+    - get: staging-app-version
+      params:
+        pre: alpha
+    - get: app-develop-repo
+      trigger: true
+    - task: build-artificat
+      file: ci-repo/ci/tasks/build-artifact.yaml
+      input_mapping:
+        app: app-develop-repo
+        version: staging-app-version
+      output_mapping:
+        artifact: code-artifact
+    # deploy / publish our artifact to our artifact storage
+    - put: app-artifact
+      params:
+        # this is NOT regexp bu bashism wildcard!!
+        file: code-artifact/myapp-*.tgz
+    # be sure we save our bumped version
+    - put: staging-app-version
+      params:
+        file: staging-app-version/version
+
+  #######################################################################
+  ###################### app-code: Docker image #########################
+  #######################################################################
+  - name: staging-build-app-code-image
+    plan:
+    - get: app-artifact
+      passed: [staging-build-app-artifiact]
+      trigger: true
+    - get: staging-app-version
+      passed: [staging-build-app-artifiact]
+    - get: ci-repo
+    - get: app-develop-repo
+    - task: staging-build-app-code-image
+      file: ci-repo/ci/tasks/build-docker-context.yaml
+      params:
+        # the folder our Dockerfile and other docker context files are located in the input docker-repo
+        DOCKER_PATH: './docker'
+        # the filename of our app artifact in the app-artifact input
+        APP_ARTIFACT_SOURCE_FILENAME: myapp-*.tgz
+        # the expected filename of the app artifact in the Dockerfile of the app app-code image, see
+        # https://github.com/kw-concourse-example/concourse-example-app/blob/master/docker/Dockerfile#L5
+        APP_ARTIFACT_DEST_FILENAME: myapp.tgz
+      input_mapping:
+        # the input where are Dockerfile is located
+        docker-repo: app-develop-repo
+        # the input of our app artifact
+        app-artificat: app-artifact
+      output_mapping:
+        # this will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
+        # using the docker-resource
+        docker-build-context: build-context
+    - put: app-code-docker-image
+      get_params:
+        skip_download : true
+      params:
+        build: build-context
+        tag_as_latest: true
+        tag_file: staging-app-version/version
+
+resources:
+  - name: staging-app-version
+    type: semver
+    source:
+      driver: git
+      uri: ((app.git-repo))
+      branch: version
+      file: staging-version
+      private_key: ((github-private-key))
