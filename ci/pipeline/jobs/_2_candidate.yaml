@@ -25,7 +25,7 @@ jobs:
       file: release-artifact/myapp-*.tgz
   - put: candidate-app-version
     params:
-      file: release-app-version/version
+      file: candidate-app-version/version
 
 resources:
   - name: candidate-app-version
@@ -34,5 +34,5 @@ resources:
       driver: git
       uri: ((app.git-repo))
       branch: version
-      file: release-version
+      file: candidate-version
       private_key: ((github-private-key))

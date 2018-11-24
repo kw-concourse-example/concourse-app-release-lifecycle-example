@@ -19,11 +19,24 @@ and later promoting candidates to releases.
 
 # Setup
 
+You will need the pipeline templateer `ctpl` to compile the splitted templates, see more under [ctpl](https://github.com/EugenMayer/concourse-pipeline-templateer)
+
+```console
+# templateer
+gem install ctpl
+
+# your own local concourse instance with s3 storage, vault and everything else
+git clone https://github.com/EugenMayer/concourseci-server-boilerplate
+
+# this pipeline 
+git clone concourse-app-release-lifecycle-example
+``` 
+
+continue below
 ## Start your own testing concourse instance
 
-1. Checkout `https://github.com/EugenMayer/concourseci-server-boilerplate`
-1. Enter `concourseci-server-boilerplate` and run `docker-compose up`
-2. Run `/login.sh`
+1. Enter `concourseci-server-boilerplate` and run `docker-compose up` to start your local concourse
+2. Run `/login.sh` to authenticate your `fly` (user: included1 / password: included1)
 
 ## Deploy this pipeline to your new concourse 
 1. Back to `concourse-app-release-lifecycle-example`
