@@ -2,3 +2,4 @@
 .idea/php.yml
 .credentials.yaml
 .variables.yaml
+ci/pipeline.yaml

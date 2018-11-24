@@ -18,6 +18,7 @@ and later promoting candidates to releases.
 `Traceability`: It includes the shasum and the version in the `app code artifact` 
 
 `Development`: Our app repo has a `develop` branch for ongoing development. Every release gets merged into `master` automatically (and tagged)
+
 # Setup
 
 You will need the pipeline templateer `ctpl` to compile the splitted templates, see more under [ctpl](https://github.com/EugenMayer/concourse-pipeline-templateer)
@@ -34,6 +35,7 @@ git clone concourse-app-release-lifecycle-example
 ``` 
 
 continue below
+
 ## Start your own testing concourse instance
 
 1. Enter `concourseci-server-boilerplate` and run `docker-compose up` to start your local concourse
@@ -54,6 +56,16 @@ Your done :) Start the job
 You find the pipeline files splitted in `ci/pipeline` for better readability and semantic grouping
 Those files are compiled using [ctpl](https://github.com/EugenMayer/concourse-pipeline-templateer)
 
+## Application example strucure
+
+- `code`: code is in this repo [concourse-example-app](https://github.com/kw-concourse-example/concourse-example-app) 
+- The CI pipeline files are in this repo at `ci, so [concourse-app-release-lifecycle-example](https://github.com/kw-concourse-example/concourse-app-release-lifecycle-example)
+
+The `code` repo:
+
+Has a develop and master branch. You work should go into `develop` as usual.
+Master is used by the ci mainly to make your releases transparent, so it merges develop on release into master.
+You can work without this split with only master, in this case remove the `target` for the `tag-and-optional-merge` task 
 ## .variables.yaml
 
 ```yaml
