@@ -26,10 +26,12 @@ jobs:
       version: staging-app-version
     output_mapping:
       artifact: code-artifact
-  - put: app-artifact
+  - put: publish-staging-artificat
+    resource: app-artifact
     params:
       file: code-artifact/myapp-*.tgz
-  - put: staging-app-version
+  - put: save-staging-version
+    resource: staging-app-version
     params:
       file: staging-app-version/version
 - name: staging-build-app-code-image
@@ -60,7 +62,6 @@ jobs:
     params:
       build: build-context
       tag_as_latest: true
-      tag_file: staging-app-version/version
 - name: promote-to-candidate
   plan:
   - get: candidate-app-version
@@ -74,15 +75,17 @@ jobs:
     file: ci-repo/ci/tasks/promote-artifact.yaml
     input_mapping:
       app-artifact: app-artifact
-      promote-to-version: release-app-version
+      promote-to-version: candidate-app-version
     output_mapping:
       transformed-artifact: release-artifact
-  - put: app-artifact
+  - put: publish-canidate-artificat
+    resource: app-artifact
     params:
       file: release-artifact/myapp-*.tgz
-  - put: candidate-app-version
+  - put: save-candidate-version
+    resource: candidate-app-version
     params:
-      file: release-app-version/version
+      file: candidate-app-version/version
 - name: promote-to-release
   plan:
   - get: release-app-version
@@ -99,12 +102,22 @@ jobs:
       promote-to-version: release-app-version
     output_mapping:
       transformed-artifact: release-artifact
-  - put: app-artifact
+  - put: publish-release-artifact
+    resource: app-artifact
     params:
       file: release-artifact/myapp-*.tgz
-  - put: release-app-version
+  - put: save-release-version
+    resource: release-app-version
     params:
       file: release-app-version/version
+  - put: increment-staging-version-by-patch
+    resource: staging-app-version
+    params:
+      bump: patch
+  - put: increment-candidate-version-by-patch
+    resource: candidate-app-version
+    params:
+      bump: patch
 - name: merge-master-and-tag-with-release-version
   plan:
   - get: app-artifact
@@ -131,10 +144,6 @@ jobs:
   - put: app-master-repo
     params:
       repository: app-develop-repo-modified
-  - put: release-app-version
-    params:
-      file: release-app-version/version
-      bump: patch
 resources:
 - name: app-artifact
   type: s3
@@ -185,7 +194,7 @@ resources:
     driver: git
     uri: "((app.git-repo))"
     branch: version
-    file: release-version
+    file: candidate-version
     private_key: "((github-private-key))"
 - name: release-app-version
   type: semver

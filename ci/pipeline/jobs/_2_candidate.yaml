@@ -16,14 +16,16 @@ jobs:
     input_mapping:
       # The input app artifact that will be transformed
       app-artifact: app-artifact
-      promote-to-version: release-app-version
+      promote-to-version: candidate-app-version
     output_mapping:
       transformed-artifact: release-artifact
-  - put: app-artifact
+  - put: publish-canidate-artificat
+    resource: app-artifact
     params:
       # this is NOT regexp but bashism wildcard!!
       file: release-artifact/myapp-*.tgz
-  - put: candidate-app-version
+  - put: save-candidate-version
+    resource: candidate-app-version
     params:
       file: candidate-app-version/version
 
