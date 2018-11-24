@@ -2,13 +2,18 @@
 
 # Setup
 
-1.  checkout `https://github.com/EugenMayer/concourseci-server-boilerplate` and run `docker-compose up`
-2. run `./login.sh`
-3. Back to `concourse-app-release-lifecycle-example`
-3. Create a `.variables.yaml` and see the `.variables.yaml` section below
-3. Run `make ci-p-deploy` to generate and deploy the pipeline ( and rerun if you do changes )
-4. Connect to `http://localhost:9001/minio` with credentials minio / changeme
-5. Create the bucket `myapp` ( + sign in the bottom right corner )
+## Start your own testing concourse instance
+
+1. Checkout `https://github.com/EugenMayer/concourseci-server-boilerplate`
+1. Enter `concourseci-server-boilerplate` and run `docker-compose up`
+2. Run `/login.sh`
+
+## Deploy this pipeline to your new concourse 
+1. Back to `concourse-app-release-lifecycle-example`
+1. Create a `.variables.yaml` and see the `.variables.yaml` section below
+1. Run `make ci-p-deploy` to generate and deploy the pipeline ( and rerun if you do changes )
+1. Connect to `http://localhost:9001/minio` with credentials minio / changeme
+1. Create the bucket `myapp` ( + sign in the bottom right corner )
 
  
 Your done :) Start the job 
