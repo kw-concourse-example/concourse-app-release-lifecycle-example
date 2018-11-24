@@ -6,13 +6,17 @@
 2. run `./login.sh`
 3. Back to `concourse-app-release-lifecycle-example`
 3. Create a `.variables.yaml` and see the `.variables.yaml` section below
-3. Run `./deploy.sh` to deploy the pipeline ( and rerun if you do changes )
+3. Run `make ci-p-deploy` to generate and deploy the pipeline ( and rerun if you do changes )
 4. Connect to `http://localhost:9001/minio` with credentials minio / changeme
 5. Create the bucket `myapp` ( + sign in the bottom right corner )
 
  
 Your done :) Start the job 
 
+## Splitted pipeline files?
+
+You find the pipeline files splitted in `ci/pipeline` for better readability and semantic grouping
+Those files are compiled using [ctpl](https://github.com/EugenMayer/concourse-pipeline-templateer)
 
 ## .variables.yaml
 
