@@ -10,7 +10,7 @@ groups:
 jobs: []
 # jobs are all in pipeline/jobs/*
 
-resources:
+resources: # common resources used across all jobs
   - name: app-artifact
     type: s3
     source:

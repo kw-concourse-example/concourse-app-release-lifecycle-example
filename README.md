@@ -17,6 +17,7 @@ and later promoting candidates to releases.
 
 `Traceability`: It includes the shasum and the version in the `app code artifact` 
 
+`Development`: Our app repo has a `develop` branch for ongoing development. Every release gets merged into `master` automatically (and tagged)
 # Setup
 
 You will need the pipeline templateer `ctpl` to compile the splitted templates, see more under [ctpl](https://github.com/EugenMayer/concourse-pipeline-templateer)

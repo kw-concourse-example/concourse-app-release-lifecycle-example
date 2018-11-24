@@ -88,7 +88,7 @@ jobs:
       file: candidate-app-version/version
 - name: promote-to-release
   plan:
-  - get: release-app-version
+  - get: candidate-app-version
     params:
       bump: final
   - get: app-artifact
@@ -99,7 +99,7 @@ jobs:
     file: ci-repo/ci/tasks/promote-artifact.yaml
     input_mapping:
       app-artifact: app-artifact
-      promote-to-version: release-app-version
+      promote-to-version: candidate-app-version
     output_mapping:
       transformed-artifact: release-artifact
   - put: publish-release-artifact
@@ -109,12 +109,12 @@ jobs:
   - put: save-release-version
     resource: release-app-version
     params:
-      file: release-app-version/version
+      file: candidate-app-version/version
   - put: increment-staging-version-by-patch
     resource: staging-app-version
     params:
       bump: patch
-  - put: increment-candidate-version-by-patch
+  - put: increment-candidate  -version-by-patch
     resource: candidate-app-version
     params:
       bump: patch
