@@ -1,5 +1,22 @@
 # WAT
 
+This `concourse pipeline` should show an example application build lifecycle including 
+
+ - staging builds
+ - candidate builds
+ - release builds
+ 
+`Versions`: It includes versioning for all 3 stages and also manual "promoting" of e.g staging builds to candidates
+and later promoting candidates to releases.
+
+`Artificats`: It stores your artifacts on your local minio (s3) storage for proper concourse resource handling
+
+`Promoting`: Shows how to "repackage"/inject the candidate version into the staging build, so proper repackaing, to rebuilding. Ensures you deploy what you tested
+
+`Tagging`: It includes tagging of the src repo on release to visualize what has been released when.
+
+`Traceability`: It includes the shasum and the version in the `app code artifact` 
+
 # Setup
 
 ## Start your own testing concourse instance
