@@ -27,13 +27,13 @@ run:
     mkdir -p package_dir && cd package_dir
     tar xzf ${CI_BASE}/app-artifact/myapp*.tgz -C ./
 
-    export PREVIOUS_VERSION=$(cat target/version)
-    export SHASUM=$(cat target/shasum)
-    echo "TRANSFORMING ARTIFACT WITH SHASUM: ${SHASUM}"
+    export PREVIOUS_VERSION=$(cat target/.version)
+    export COMMITREF=$(cat target/.commitref)
+    echo "TRANSFORMING ARTIFACT WITH COMMITREF: ${COMMITREF}"
     echo "TRANSFORMING ARTIFACT FROM VERSION: ${PREVIOUS_VERSION}"
     echo "TRANSFORMING ARTIFACT TO VERSION: ${PROMOTE_TO_VERSION}"
 
-    echo ${PROMOTE_TO_VERSION} > target/version
+    echo ${PROMOTE_TO_VERSION} > target/.version
 
     tar czf myapp-$PROMOTE_TO_VERSION.tgz target
 

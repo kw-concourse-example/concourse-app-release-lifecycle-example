@@ -23,19 +23,19 @@ run:
     export CI_BASE=`pwd`
     export OUTPUT_FOLDER="$CI_BASE/artifact"
     export VERSION=`cat $CI_BASE/version/version`
+    export COMMITREF=`cat $CI_BASE/app/.git/ref`
     # make us relative to the app
     cd $CI_BASE/app
 
     # debug info
-    printf "git sha sum is:"
-    cat "$CI_BASE/app/.git/ref"
-    echo
+    echo "git commit ref is: $COMMITREF"
     echo "version is: $VERSION"
 
     # create / simulate something "we compile" so that is our compile step and our compiled source lands in ./target
     mkdir -p ./target
-    cp $CI_BASE/app/.git/ref ./target/shasum
-    echo $VERSION > ./target/version
+    echo $COMMITREF ./target/.commitref
+    echo $VERSION > ./target/.version
+    echo "code" > ./target/code
 
     # package our code and put it into our putput folder
     echo "creating output artifact to $OUTPUT_FOLDER/myapp-$VERSION.tgz"

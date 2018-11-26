@@ -53,10 +53,10 @@ run:
     # Extract artifact and export infos into env
     cd ${CI_BASE}/artifact
     tar xzf myapp*.tgz
-    export VERSION=$(cat target/version)
-    export SHASUM=$(cat target/shasum)
+    export VERSION=$(cat target/.version)
+    export COMMITREF=$(cat target/.commitref)
     echo "VERSION: $VERSION"
-    echo "SHASUM: $SHASUM"
+    echo "COMMITREF: $COMMITREF"
 
     cd ${CI_BASE}/repo
 
@@ -92,12 +92,12 @@ run:
       git merge ${ORIGIN_BRANCH}
 
       # Comment in the below command when using --no-ff for the merge command
-      # git commit -am "Merge ${ORIGIN_BRANCH} (${SHASUM}) into ${TARGET_BRANCH}."
+      # git commit -am "Merge ${ORIGIN_BRANCH} (${COMMITREF}) into ${TARGET_BRANCH}."
     fi
 
     # Idempotent: ensure we are on the right branch and the right shasum to tag, no matter ifmerged or not.
     git checkout ${TARGET_BRANCH}
-    git reset --hard ${SHASUM}
+    git reset --hard ${COMMITREF}
 
-    git tag -a ${VERSION} -m "Auto Tagging by Kontextwork Concourse CI" ${SHASUM}
+    git tag -a ${VERSION} -m "Auto Tagging by CI" ${COMMITREF}
 
