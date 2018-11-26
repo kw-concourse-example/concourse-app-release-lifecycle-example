@@ -28,7 +28,7 @@ jobs:
       params:
         file: candidate-app-version/version
     - put: increment-staging-version-by-patch
-      resource: staging-app-version
+      resource: staging-app-code-version
       params:
         bump: patch
     - put: increment-candidate-version-by-patch
@@ -51,7 +51,7 @@ jobs:
     - get: release-app-version
       passed: [promote-to-release]
     - get: ci-repo
-    - get: app-develop-repo
+    - get: app-code-develop-repo
     - get: app-master-repo
     - task: run-tag-and-optional-merge-task
       file: ci-repo/ci/tasks/tag-and-optional-merge.yaml
@@ -60,13 +60,13 @@ jobs:
         ORIGIN_BRANCH: 'develop'
         TARGET_BRANCH: 'master'
       input_mapping:
-        repo: app-develop-repo
+        repo: app-code-develop-repo
         artifact: app-artifact
       output_mapping:
-        repo-modified: app-develop-repo-modified
+        repo-modified: app-code-develop-repo-modified
     - put: app-master-repo
       params:
-        repository: app-develop-repo-modified # Master will be checked out here.
+        repository: app-code-develop-repo-modified # Master will be checked out here.
     # We patch after the release is completely finalized was successful,
     # because candidate in the next cycle will only add rc-X.
 

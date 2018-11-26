@@ -4,10 +4,10 @@ jobs:
   #######################################################################
   - name: start-staging
     plan:
-    - get: app-develop-repo
+    - get: app-code-develop-repo
       clean_tags: true
       trigger: true
-    - get: staging-app-version
+    - get: staging-app-code-version
       params:
         pre: alpha
     # This no-op put or git push seems to be enough to always make sure that the latest repository is checked out
@@ -17,26 +17,26 @@ jobs:
     # In the post below, two repos are used, and the trigger is get and then pushed
     # to the same repo. This seems to ensure everything is on the most current state
     # https://github.com/concourse/concourse/issues/1719#issuecomment-336722092
-    - put: app-develop-repo
+    - put: app-code-develop-repo
       params:
-        repository: app-develop-repo
-    - put: staging-app-version
+        repository: app-code-develop-repo
+    - put: staging-app-code-version
       params:
-        file: staging-app-version/version
+        file: staging-app-code-version/version
 
   - name: staging-build-app-artifact
     plan:
     - get: ci-repo
-    - get: staging-app-version
+    - get: staging-app-code-version
       passed: [start-staging]
       trigger: true
-    - get: app-develop-repo
+    - get: app-code-develop-repo
       passed: [start-staging]
     - task: build-artificat
       file: ci-repo/ci/tasks/build-artifact.yaml
       input_mapping:
-        app: app-develop-repo
-        version: staging-app-version
+        app: app-code-develop-repo
+        version: staging-app-code-version
       output_mapping:
         artifact: code-artifact
     # deploy / publish our artifact to our artifact storage
@@ -47,9 +47,9 @@ jobs:
         file: code-artifact/myapp-*.tgz
     # be sure we save our bumped version
     - put: save-staging-version
-      resource: staging-app-version
+      resource: staging-app-code-version
       params:
-        file: staging-app-version/version
+        file: staging-app-code-version/version
 
   #######################################################################
   ###################### app-code: Docker image #########################
@@ -59,10 +59,10 @@ jobs:
     - get: app-artifact
       passed: [staging-build-app-artifact]
       trigger: true
-    - get: staging-app-version
+    - get: staging-app-code-version
       passed: [staging-build-app-artifact]
     - get: ci-repo
-    - get: app-develop-repo
+    - get: app-code-develop-repo
     - task: staging-build-app-code-image
       file: ci-repo/ci/tasks/build-docker-context.yaml
       params:
@@ -75,7 +75,7 @@ jobs:
         APP_ARTIFACT_DEST_FILENAME: myapp.tgz
       input_mapping:
         # the input where are Dockerfile is located
-        docker-repo: app-develop-repo
+        docker-repo: app-code-develop-repo
         # the input of our app artifact
         app-artificat: app-artifact
       output_mapping:
@@ -88,10 +88,10 @@ jobs:
       params:
         build: build-context
         tag_as_latest: true
-        # tag_file: staging-app-version/version
+        # tag_file: staging-app-code-version/version
 
 resources:
-  - name: staging-app-version
+  - name: staging-app-code-version
     type: semver
     source:
       driver: git
