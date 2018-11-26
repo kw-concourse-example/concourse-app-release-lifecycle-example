@@ -9,9 +9,9 @@ jobs:
         bump: final
     - get: app-artifact
       passed: [promote-to-candidate]
-    - get: ci-repo
+    - get: staging-app-code-versionepo
     - task: run-promote-staging-artifact-to-final-release-artifact
-      file: ci-repo/ci/tasks/promote-artifact.yaml
+      file: app-ci-repo/ci/tasks/promote-app-artifact.yaml
       input_mapping:
         # The input app artifact that will be transformed
         app-artifact: app-artifact
@@ -50,11 +50,11 @@ jobs:
       trigger: true
     - get: release-app-version
       passed: [promote-to-release]
-    - get: ci-repo
+    - get: app-ci-repo
     - get: app-code-develop-repo
     - get: app-master-repo
     - task: run-tag-and-optional-merge-task
-      file: ci-repo/ci/tasks/tag-and-optional-merge.yaml
+      file: app-ci-repo/ci/tasks/tag-and-optional-merge.yaml
       params:
         GIT_PRIVATE_KEY: ((github-private-key))
         ORIGIN_BRANCH: 'develop'

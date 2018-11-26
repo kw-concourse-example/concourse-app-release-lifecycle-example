@@ -9,20 +9,20 @@ jobs:
       pre: rc
   - get: app-artifact
     passed: [staging-build-app-code-image]
-  - get: ci-repo
+  - get: app-ci-repo
   - task: promote-staging-artifact-to-candidate-release-artifact
-    file: ci-repo/ci/tasks/promote-artifact.yaml
+    file: app-ci-repo/ci/tasks/promote-app-artifact.yaml
     input_mapping:
       # The input app artifact that will be transformed
       app-artifact: app-artifact
       promote-to-version: candidate-app-version
     output_mapping:
-      transformed-artifact: release-artifact
+      transformed-artifact: candidate-artifact
   - put: publish-canidate-artificat
     resource: app-artifact
     params:
       # this is NOT regexp but bashism wildcard!!
-      file: release-artifact/myapp-*.tgz
+      file: candidate-artifact/myapp-*.tgz
   - put: save-candidate-version
     resource: candidate-app-version
     params:

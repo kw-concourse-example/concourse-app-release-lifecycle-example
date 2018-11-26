@@ -25,14 +25,14 @@ jobs:
 
   - name: staging-build-app-artifact
     plan:
-    - get: ci-repo
+    - get: app-ci-repo
     - get: staging-app-code-version
       passed: [start-staging-code]
       trigger: true
     - get: app-code-develop-repo
       passed: [start-staging]
     - task: build-artificat
-      file: ci-repo/ci/tasks/build-artifact.yaml
+      file: app-ci-repo/ci/tasks/build-artifact.yaml
       input_mapping:
         app: app-code-develop-repo
         version: staging-app-code-version
@@ -60,10 +60,10 @@ jobs:
       trigger: true
     - get: staging-app-code-version
       passed: [staging-build-app-artifact]
-    - get: ci-repo
+    - get: app-ci-repo
     - get: app-code-develop-repo
     - task: staging-build-app-code-image
-      file: ci-repo/ci/tasks/build-docker-context.yaml
+      file: app-ci-repo/ci/tasks/build-docker-context.yaml
       params:
         # the folder our Dockerfile and other docker context files are located in the input docker-repo
         DOCKER_PATH: './docker'

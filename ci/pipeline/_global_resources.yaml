@@ -34,7 +34,7 @@ resources: # common resources used across all jobs
     password: ((docker-registry.password))
     repository: ((app.docker-image)) # like kwexample/concourse-example-app
 
-- name: ci-repo
+- name: app-ci-repo
   type: git
   source:
     uri: ((ci.git-repo))
