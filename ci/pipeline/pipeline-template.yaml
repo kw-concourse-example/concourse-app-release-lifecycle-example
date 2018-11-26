@@ -1,7 +1,7 @@
 groups:
 - name: staging
   jobs:
-  - start-staging
+  - start-staging-code
   - staging-build-app-artifact
   - staging-build-app-code-image
   - promote-to-candidate

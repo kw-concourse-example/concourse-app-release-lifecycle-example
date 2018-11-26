@@ -2,7 +2,7 @@ jobs:
   #######################################################################
   ###################### app-code: artifact #############################
   #######################################################################
-  - name: start-staging
+  - name: start-staging-code
     plan:
     - get: app-code-develop-repo
       trigger: true
@@ -27,7 +27,7 @@ jobs:
     plan:
     - get: ci-repo
     - get: staging-app-code-version
-      passed: [start-staging]
+      passed: [start-staging-code]
       trigger: true
     - get: app-code-develop-repo
       passed: [start-staging]
