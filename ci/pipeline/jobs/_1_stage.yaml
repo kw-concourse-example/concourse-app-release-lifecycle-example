@@ -5,7 +5,6 @@ jobs:
   - name: start-staging
     plan:
     - get: app-code-develop-repo
-      clean_tags: true
       trigger: true
     - get: staging-app-code-version
       params:
