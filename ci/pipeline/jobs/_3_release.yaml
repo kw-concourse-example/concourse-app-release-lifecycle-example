@@ -31,7 +31,7 @@ jobs:
       resource: staging-app-version
       params:
         bump: patch
-    - put: increment-candidate  -version-by-patch
+    - put: increment-candidate-version-by-patch
       resource: candidate-app-version
       params:
         bump: patch

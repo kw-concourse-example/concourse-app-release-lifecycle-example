@@ -2,14 +2,36 @@ jobs:
   #######################################################################
   ###################### app-code: artifact #############################
   #######################################################################
-  - name: staging-build-app-artifiact
+  - name: start-staging
     plan:
-    - get: ci-repo
+    - get: app-develop-repo
+      clean_tags: true
+      trigger: true
     - get: staging-app-version
       params:
         pre: alpha
-    - get: app-develop-repo
+    # This no-op put or git push seems to be enough to always make sure that the latest repository is checked out
+    # in concourse. Otherwise there is the problem that we use check_every: 5m on most resources to safe the waste
+    # of resources.
+    # Source:
+    # In the post below, two repos are used, and the trigger is get and then pushed
+    # to the same repo. This seems to ensure everything is on the most current state
+    # https://github.com/concourse/concourse/issues/1719#issuecomment-336722092
+    - put: app-develop-repo
+      params:
+        repository: app-develop-repo
+    - put: staging-app-version
+      params:
+        file: staging-app-version/version
+
+  - name: staging-build-app-artifact
+    plan:
+    - get: ci-repo
+    - get: staging-app-version
+      passed: [start-staging]
       trigger: true
+    - get: app-develop-repo
+      passed: [start-staging]
     - task: build-artificat
       file: ci-repo/ci/tasks/build-artifact.yaml
       input_mapping:
@@ -35,10 +57,10 @@ jobs:
   - name: staging-build-app-code-image
     plan:
     - get: app-artifact
-      passed: [staging-build-app-artifiact]
+      passed: [staging-build-app-artifact]
       trigger: true
     - get: staging-app-version
-      passed: [staging-build-app-artifiact]
+      passed: [staging-build-app-artifact]
     - get: ci-repo
     - get: app-develop-repo
     - task: staging-build-app-code-image
