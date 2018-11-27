@@ -2,35 +2,18 @@ jobs:
   #######################################################################
   ###################### app-code: artifact #############################
   #######################################################################
-  - name: start-staging-code
-    plan:
-    - get: app-code-develop-repo
-      trigger: true
-    - get: staging-app-code-version
-      params:
-        pre: alpha
-    # This no-op put or git push seems to be enough to always make sure that the latest repository is checked out
-    # in concourse. Otherwise there is the problem that we use check_every: 5m on most resources to safe the waste
-    # of resources.
-    # Source:
-    # In the post below, two repos are used, and the trigger is get and then pushed
-    # to the same repo. This seems to ensure everything is on the most current state
-    # https://github.com/concourse/concourse/issues/1719#issuecomment-336722092
-    - put: app-code-develop-repo
-      params:
-        repository: app-code-develop-repo
-    - put: staging-app-code-version
-      params:
-        file: staging-app-code-version/version
 
+  # A start and fake tag/push is not needed anymore. The author (vito) stated, that all resources should be checked
+  # when a task is run manually. This behavior was broken several months ago, and seems to be fixed now, while the issue
+  # mentioning this bug was not fixed with a PR linked to the issue itself (which is common practice in concourse).
+  #
+  # Issue was: https://github.com/concourse/concourse/issues/1719#issuecomment-336722092
   - name: staging-build-app-artifact
     plan:
+    - get: app-code-develop-repo
+      trigger: true
     - get: app-ci-repo
     - get: staging-app-code-version
-      passed: [start-staging-code]
-      trigger: true
-    - get: app-code-develop-repo
-      passed: [start-staging]
     - task: build-artificat
       file: app-ci-repo/ci/tasks/build-artifact.yaml
       input_mapping:
