@@ -4,7 +4,7 @@ jobs:
   #################################################################################
   - name: promote-to-release
     plan:
-    - get: candidate-app-version
+    - get: candidate-app-code-version
       params:
         bump: final
     - get: app-artifact
@@ -15,7 +15,7 @@ jobs:
       input_mapping:
         # The input app artifact that will be transformed
         app-artifact: app-artifact
-        promote-to-version: candidate-app-version
+        promote-to-version: candidate-app-code-version
       output_mapping:
         transformed-artifact: release-artifact
     - put: publish-release-artifact
@@ -24,15 +24,15 @@ jobs:
         # this is NOT regexp bu bashism wildcard!!
         file: release-artifact/myapp-*.tgz
     - put: save-release-version
-      resource: release-app-version
+      resource: release-app-code-version
       params:
-        file: candidate-app-version/version
+        file: candidate-app-code-version/version
     - put: increment-staging-version-by-patch
       resource: staging-app-code-version
       params:
         bump: patch
     - put: increment-candidate-version-by-patch
-      resource: candidate-app-version
+      resource: candidate-app-code-version
       params:
         bump: patch
 
@@ -48,7 +48,7 @@ jobs:
     - get: app-artifact
       passed: [promote-to-release]
       trigger: true
-    - get: release-app-version
+    - get: release-app-code-version
       passed: [promote-to-release]
     - get: app-ci-repo
     - get: app-code-develop-repo
@@ -71,7 +71,7 @@ jobs:
     # because candidate in the next cycle will only add rc-X.
 
 resources:
-  - name: release-app-version
+  - name: release-app-code-version
     type: semver
     source:
       driver: git

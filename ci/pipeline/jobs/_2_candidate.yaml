@@ -4,7 +4,7 @@ jobs:
 #################################################################################
 - name: promote-to-candidate
   plan:
-  - get: candidate-app-version
+  - get: candidate-app-code-version
     params:
       pre: rc
   - get: app-artifact
@@ -15,7 +15,7 @@ jobs:
     input_mapping:
       # The input app artifact that will be transformed
       app-artifact: app-artifact
-      promote-to-version: candidate-app-version
+      promote-to-version: candidate-app-code-version
     output_mapping:
       transformed-artifact: candidate-artifact
   - put: publish-canidate-artificat
@@ -24,12 +24,12 @@ jobs:
       # this is NOT regexp but bashism wildcard!!
       file: candidate-artifact/myapp-*.tgz
   - put: save-candidate-version
-    resource: candidate-app-version
+    resource: candidate-app-code-version
     params:
-      file: candidate-app-version/version
+      file: candidate-app-code-version/version
 
 resources:
-  - name: candidate-app-version
+  - name: candidate-app-code-version
     type: semver
     source:
       driver: git
