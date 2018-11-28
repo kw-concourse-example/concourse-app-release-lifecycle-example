@@ -8,7 +8,7 @@ jobs:
     params:
       pre: rc
   - get: code-artifact
-    passed: [staging-build-code-image]
+    passed: [staging-build-code-docker-image]
   - get: app-ci-repo
   - task: promote-staging-artifact-to-candidate-release-artifact
     file: app-ci-repo/ci/tasks/promote-code-artifact.yaml

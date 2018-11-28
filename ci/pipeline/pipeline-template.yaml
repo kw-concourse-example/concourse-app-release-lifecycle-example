@@ -3,7 +3,7 @@ groups:
   jobs:
   - start-staging-code
   - staging-build-code-artifact
-  - staging-build-code-image
+  - staging-build-code-docker-image
   - promote-to-candidate
   - promote-to-release
   - merge-master-and-tag-with-release-version
@@ -14,6 +14,10 @@ jobs: []
 resources: []
 # all global resources are under _global_resources.yaml - all those we use in several jobs
 
-resource_types: []
-# all the global resource types can be found under _resource_types.yaml
-
+resource_types:
+- name: docker-image-resource-ng
+  type: docker-image
+  privileged: true
+  source:
+    repository: eugenmayer/concourse-docker-image-resource
+    tag: latest

@@ -36,7 +36,7 @@ jobs:
   #######################################################################
   ###################### app-code: Docker image #########################
   #######################################################################
-  - name: staging-build-code-image
+  - name: staging-build-code-docker-image
     plan:
     - get: code-artifact
       passed: [staging-build-code-artifact]
@@ -45,7 +45,7 @@ jobs:
       passed: [staging-build-code-artifact]
     - get: app-ci-repo
     - get: code-develop-repo
-    - task: staging-build-code-image
+    - task: staging-build-code-docker-image
       file: app-ci-repo/ci/tasks/build-docker-context.yaml
       params:
         # the folder our Dockerfile and other docker context files are located in the input docker-repo
@@ -59,12 +59,12 @@ jobs:
         # the input where are Dockerfile is located
         docker-repo: code-develop-repo
         # the input of our app artifact
-        app-artificat: code-artifact
+        code-artificat: code-artifact
       output_mapping:
         # this will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
         # using the docker-resource
         docker-build-context: build-context
-    - put: app-code-docker-image
+    - put: staging-build-code-docker-image
       get_params:
         skip_download : true
       params:

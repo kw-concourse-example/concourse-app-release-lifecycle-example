@@ -8,7 +8,7 @@ image_resource:
     tag: "stretch"
 
 inputs:
-- name: app-artifact
+- name: code-artifact
 - name: promote-to-version
 - name: drupal_version
 
@@ -25,7 +25,7 @@ run:
     export PROMOTE_TO_VERSION=`cat $CI_BASE/promote-to-version/version`
 
     mkdir -p package_dir && cd package_dir
-    tar xzf ${CI_BASE}/app-artifact/myapp*.tgz -C ./
+    tar xzf ${CI_BASE}/code-artifact/myapp*.tgz -C ./
 
     export PREVIOUS_VERSION=$(cat target/.version)
     export COMMITREF=$(cat target/.commitref)
