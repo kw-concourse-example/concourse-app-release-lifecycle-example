@@ -1,5 +1,5 @@
 resources: # common resources used across all jobs
-- name: app-artifact
+- name: code-artifact
   type: s3
   source:
     bucket: myapp
@@ -11,7 +11,7 @@ resources: # common resources used across all jobs
     access_key_id: minio
     secret_access_key: changeme
 
-- name: app-code-develop-repo
+- name: code-develop-repo
   type: git
   source:
     uri: ((app.git-repo))

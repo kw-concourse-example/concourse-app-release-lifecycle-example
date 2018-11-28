@@ -4,32 +4,32 @@ jobs:
 #################################################################################
 - name: promote-to-candidate
   plan:
-  - get: candidate-app-code-version
+  - get: candidate-code-version
     params:
       pre: rc
-  - get: app-artifact
-    passed: [staging-build-app-code-image]
+  - get: code-artifact
+    passed: [staging-build-code-image]
   - get: app-ci-repo
   - task: promote-staging-artifact-to-candidate-release-artifact
-    file: app-ci-repo/ci/tasks/promote-app-artifact.yaml
+    file: app-ci-repo/ci/tasks/promote-code-artifact.yaml
     input_mapping:
       # The input app artifact that will be transformed
-      app-artifact: app-artifact
-      promote-to-version: candidate-app-code-version
+      code-artifact: code-artifact
+      promote-to-version: candidate-code-version
     output_mapping:
       transformed-artifact: candidate-artifact
   - put: publish-canidate-artificat
-    resource: app-artifact
+    resource: code-artifact
     params:
       # this is NOT regexp but bashism wildcard!!
       file: candidate-artifact/myapp-*.tgz
   - put: save-candidate-version
-    resource: candidate-app-code-version
+    resource: candidate-code-version
     params:
-      file: candidate-app-code-version/version
+      file: candidate-code-version/version
 
 resources:
-  - name: candidate-app-code-version
+  - name: candidate-code-version
     type: semver
     source:
       driver: git

@@ -8,58 +8,58 @@ jobs:
   # mentioning this bug was not fixed with a PR linked to the issue itself (which is common practice in concourse).
   #
   # Issue was: https://github.com/concourse/concourse/issues/1719#issuecomment-336722092
-  - name: staging-build-app-artifact
+  - name: staging-build-code-artifact
     plan:
-    - get: app-code-develop-repo
+    - get: code-develop-repo
       trigger: true
     - get: app-ci-repo
-    - get: staging-app-code-version
+    - get: staging-code-version
     - task: build-artificat
       file: app-ci-repo/ci/tasks/build-artifact.yaml
       input_mapping:
-        app: app-code-develop-repo
-        version: staging-app-code-version
+        app: code-develop-repo
+        version: staging-code-version
       output_mapping:
         artifact: code-artifact
     # deploy / publish our artifact to our artifact storage
     - put: publish-staging-artificat
-      resource: app-artifact
+      resource: code-artifact
       params:
         # this is NOT regexp bu bashism wildcard!!
         file: code-artifact/myapp-*.tgz
     # be sure we save our bumped version
     - put: save-staging-version
-      resource: staging-app-code-version
+      resource: staging-code-version
       params:
-        file: staging-app-code-version/version
+        file: staging-code-version/version
 
   #######################################################################
   ###################### app-code: Docker image #########################
   #######################################################################
-  - name: staging-build-app-code-image
+  - name: staging-build-code-image
     plan:
-    - get: app-artifact
-      passed: [staging-build-app-artifact]
+    - get: code-artifact
+      passed: [staging-build-code-artifact]
       trigger: true
-    - get: staging-app-code-version
-      passed: [staging-build-app-artifact]
+    - get: staging-code-version
+      passed: [staging-build-code-artifact]
     - get: app-ci-repo
-    - get: app-code-develop-repo
-    - task: staging-build-app-code-image
+    - get: code-develop-repo
+    - task: staging-build-code-image
       file: app-ci-repo/ci/tasks/build-docker-context.yaml
       params:
         # the folder our Dockerfile and other docker context files are located in the input docker-repo
         DOCKER_PATH: './docker'
-        # the filename of our app artifact in the app-artifact input
+        # the filename of our app artifact in the code-artifact input
         APP_ARTIFACT_SOURCE_FILENAME: myapp-*.tgz
         # the expected filename of the app artifact in the Dockerfile of the app app-code image, see
         # https://github.com/kw-concourse-example/concourse-example-app/blob/master/docker/Dockerfile#L5
         APP_ARTIFACT_DEST_FILENAME: myapp.tgz
       input_mapping:
         # the input where are Dockerfile is located
-        docker-repo: app-code-develop-repo
+        docker-repo: code-develop-repo
         # the input of our app artifact
-        app-artificat: app-artifact
+        app-artificat: code-artifact
       output_mapping:
         # this will be a prepared docker-context, so the Dockerfile including all folders and the app artifact to build
         # using the docker-resource
@@ -70,10 +70,10 @@ jobs:
       params:
         build: build-context
         tag_as_latest: true
-        # tag_file: staging-app-code-version/version
+        # tag_file: staging-code-version/version
 
 resources:
-  - name: staging-app-code-version
+  - name: staging-code-version
     type: semver
     source:
       driver: git

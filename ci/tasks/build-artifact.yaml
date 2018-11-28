@@ -8,7 +8,7 @@ image_resource:
     tag: "stretch"
 
 inputs:
-- name: app
+- name: code
 - name: version
 
 outputs:
@@ -23,9 +23,9 @@ run:
     export CI_BASE=`pwd`
     export OUTPUT_FOLDER="$CI_BASE/artifact"
     export VERSION=`cat $CI_BASE/version/version`
-    export COMMITREF=`cat $CI_BASE/app/.git/ref`
-    # make us relative to the app
-    cd $CI_BASE/app
+    export COMMITREF=`cat $CI_BASE/code/.git/ref`
+    # make us relative to the code
+    cd $CI_BASE/code
 
     # debug info
     echo "git commit ref is: $COMMITREF"

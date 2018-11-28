@@ -2,8 +2,8 @@
 platform: linux
 params:
   DOCKER_PATH: "./"
-  APP_ARTIFACT_SOURCE_FILENAME: ""
-  APP_ARTIFACT_DEST_FILENAME: "app.tgz"
+  CODE_ARTIFACT_SOURCE_FILENAME: ""
+  CODE_ARTIFACT_DEST_FILENAME: "app.tgz"
 
 image_resource:
   type: docker-image
@@ -13,7 +13,7 @@ image_resource:
 
 inputs:
 - name: docker-repo
-- name: app-artificat
+- name: code-artificat
 
 outputs:
 - name: docker-build-context
@@ -26,11 +26,11 @@ run:
     export CI_BASE=`pwd`
     export OUTPUT_FOLDER="$CI_BASE/docker-build-context"
 
-    # make us relative to the app
+    # make us relative to the code
     cd $CI_BASE/docker-repo
 
     # copy our whole docker context to our output folder
     cp -fr $DOCKER_PATH/* $OUTPUT_FOLDER/
 
-    # add our app artificat to the docker context
-    cp ${CI_BASE}/app-artificat/$APP_ARTIFACT_SOURCE_FILENAME $OUTPUT_FOLDER/$APP_ARTIFACT_DEST_FILENAME
+    # add our code artifact to the docker context
+    cp ${CI_BASE}/code-artificat/$CODE_ARTIFACT_SOURCE_FILENAME $OUTPUT_FOLDER/$CODE_ARTIFACT_DEST_FILENAME

@@ -2,8 +2,8 @@ groups:
 - name: staging
   jobs:
   - start-staging-code
-  - staging-build-app-artifact
-  - staging-build-app-code-image
+  - staging-build-code-artifact
+  - staging-build-code-image
   - promote-to-candidate
   - promote-to-release
   - merge-master-and-tag-with-release-version
