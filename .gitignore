@@ -1,5 +1,5 @@
 .idea/workspace.yml
 .idea/php.yml
-.credentials.yaml
 .variables.yaml
+.credentials.yaml
 ci/pipeline.yaml
