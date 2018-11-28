@@ -18,11 +18,28 @@ jobs:
         promote-to-version: candidate-code-version
       output_mapping:
         transformed-artifact: release-artifact
+    #################################################################################
+    ################### merge into master and add tag in git repo ###################
+    #################################################################################
+    - task: run-tag-and-optional-merge-task
+      file: app-ci-repo/ci/tasks/tag-and-optional-merge.yaml
+      params:
+        GIT_PRIVATE_KEY: ((github-private-key))
+        ORIGIN_BRANCH: 'develop'
+        TARGET_BRANCH: 'master'
+      input_mapping:
+        repo: code-develop-repo
+        artifact: code-artifact
+      output_mapping:
+        repo-modified: code-develop-repo-modified
     - put: publish-release-artifact
       resource: code-artifact
       params:
         # this is NOT regexp bu bashism wildcard!!
         file: release-artifact/myapp-*.tgz
+    - put: app-master-repo
+      params:
+        repository: code-develop-repo-modified # Master will be checked out here.
     - put: save-release-version
       resource: release-code-version
       params:
@@ -35,40 +52,6 @@ jobs:
       resource: candidate-code-version
       params:
         bump: patch
-
-  #################################################################################
-  ################### merge into master and add tag in git repo ###################
-  #################################################################################
-
-  # The artifact from the previous job contains the version and the shasum.
-  # Merge and tagging require this information - using the artifact makes sure
-  # we have the right one in any case in concourse!
-  - name: merge-master-and-tag-with-release-version
-    plan:
-    - get: code-artifact
-      passed: [promote-to-release]
-      trigger: true
-    - get: release-code-version
-      passed: [promote-to-release]
-    - get: app-ci-repo
-    - get: code-develop-repo
-    - get: app-master-repo
-    - task: run-tag-and-optional-merge-task
-      file: app-ci-repo/ci/tasks/tag-and-optional-merge.yaml
-      params:
-        GIT_PRIVATE_KEY: ((github-private-key))
-        ORIGIN_BRANCH: 'develop'
-        TARGET_BRANCH: 'master'
-      input_mapping:
-        repo: code-develop-repo
-        artifact: code-artifact
-      output_mapping:
-        repo-modified: code-develop-repo-modified
-    - put: app-master-repo
-      params:
-        repository: code-develop-repo-modified # Master will be checked out here.
-    # We patch after the release is completely finalized was successful,
-    # because candidate in the next cycle will only add rc-X.
 
 resources:
   - name: release-code-version
