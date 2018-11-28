@@ -27,9 +27,11 @@ jobs:
         GIT_PRIVATE_KEY: ((github-private-key))
         ORIGIN_BRANCH: 'develop'
         TARGET_BRANCH: 'master'
+        ARTIFACT_FILENAME: 'myapp*.tgz'
       input_mapping:
         repo: code-develop-repo
         artifact: code-artifact
+
       output_mapping:
         repo-modified: code-develop-repo-modified
     - put: publish-release-artifact

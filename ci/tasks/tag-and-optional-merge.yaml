@@ -7,21 +7,21 @@ params:
   GIT_PRIVATE_KEY: ""
   ORIGIN_BRANCH: ""
   TARGET_BRANCH: ""
-
+  ARTIFACT_FILENAME: ""
 image_resource:
   type: docker-image
   source:
     repository: eugenmayer/golang-builder # just an example image with git - use anything
 
 inputs:
-  - name: repo
-  - name: artifact
+- name: repo
+- name: artifact
 
 outputs:
-  - name: repo-modified
+- name: repo-modified
 
 run:
-  path: sh
+  path: bash
   args:
   - -ec
   - |
@@ -52,9 +52,12 @@ run:
     export CI_BASE=$(pwd)
     # Extract artifact and export infos into env
     cd ${CI_BASE}/artifact
-    tar xzf myapp*.tgz
-    export VERSION=$(cat target/.version)
-    export COMMITREF=$(cat target/.commitref)
+    # pick the first file we find using the probably glob the user gave us
+    ARTIFACT_FILENAME=$(find `pwd` -name "${ARTIFACT_FILENAME}" | head -1)
+    mkdir -p /tmp/codebase
+    tar -xzf $ARTIFACT_FILENAME -C /tmp/codebase
+    export VERSION=$(cat $(find /tmp/codebase -name .version | head -1))
+    export COMMITREF=$(cat $(find /tmp/codebase -name .commitref | head -1))
     echo "VERSION: $VERSION"
     echo "COMMITREF: $COMMITREF"
 
@@ -70,24 +73,24 @@ run:
 
     git fetch origin ${TARGET_BRANCH}
 
-    # Copy the repo by using the local inout directory
+    echo "Copy the repo by using the local inout directory"
     # Important: The target dir will have the git remote set to the local directory!!!
     cd ${CI_BASE}
 
     # Copy all files and folders from the repo, including hidden files (hence the repo/[.] dot at the end!)
     cp -ar repo/. repo-modified/
 
-    # Start git manipulations
+    echo "Start git manipulations"
     cd ${CI_BASE}/repo-modified
 
-    if [ ! -z "$ORIGIN_BRANCH"]; then
-      # Make sure we are on the specified origin branch, the param has higher precedence than the passed repo
+    if [ ! -z "$ORIGIN_BRANCH" ]; then
+      echo "Make sure we are on the specified origin branch, the param has higher precedence than the passed repo"
       git checkout ${ORIGIN_BRANCH}
 
-      # Reset hard to be sure we are on the shasum of the commit of the artifact passed into this task.
-      git reset --hard ${SHASUM}
+      echo "Reset hard to be sure we are on the commitref of the commit of the artifact passed into this task."
+      git reset --hard ${COMMITREF}
 
-      # Merge
+      echo Merge
       git checkout ${TARGET_BRANCH}
       git merge ${ORIGIN_BRANCH}
 
@@ -95,9 +98,9 @@ run:
       # git commit -am "Merge ${ORIGIN_BRANCH} (${COMMITREF}) into ${TARGET_BRANCH}."
     fi
 
-    # Idempotent: ensure we are on the right branch and the right shasum to tag, no matter ifmerged or not.
+    # Idempotent: ensure we are on the right branch and the right commitref to tag, no matter ifmerged or not.
     git checkout ${TARGET_BRANCH}
     git reset --hard ${COMMITREF}
 
+    echo "create tag now"
     git tag -a ${VERSION} -m "Auto Tagging by CI" ${COMMITREF}
-
