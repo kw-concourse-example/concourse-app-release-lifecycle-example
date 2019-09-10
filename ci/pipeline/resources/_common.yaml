@@ -1,3 +1,15 @@
+resources: # common resources used across all jobs
+- name: code-artifact
+  type: s3
+  source:
+    bucket: myapp
+    disable_ssl: true
+    # our internal Minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
+    endpoint: http://minio:9000
+    # this needs to be actual regexp
+    regexp: myapp-(.*).tgz
+    access_key_id: minio
+    secret_access_key: changeme
 
 - name: code-develop-repo
   type: git
@@ -29,16 +41,3 @@
     username: ((docker-registry.user))
     password: ((docker-registry.password))
     repository: ((app.docker-image)) # like kwexample/concourse-example-app
-
-resources: # common resources used across all jobs
-- name: code-artifact
-  type: s3
-  source:
-    bucket: myapp
-    disable_ssl: true
-    # our internal Minio deployed in https://github.com/EugenMayer/concourseci-server-boilerplate
-    endpoint: http://minio:9000
-    # this needs to be actual regexp
-    regexp: myapp-(.*).tgz
-    access_key_id: minio
-    secret_access_key: changeme
